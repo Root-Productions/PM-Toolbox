@@ -1,0 +1,16 @@
+{
+  "name": "valres/pmtoolbox",
+  "description": "PocketMine-MP toolbox utilities, including a lightweight RCON network interface.",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "valres\\toolbox\\": "src/valres/toolbox/"
+    }
+  },
+  "require": {
+    "php": ">=8.4",
+    "ext-sockets": "*",
+    "opis/closure": "^4.4"
+  }
+}

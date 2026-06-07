@@ -1,0 +1,6 @@
+name: Tool-Box
+author: Valres
+version: 1.0.0
+
+api: [5.0.0]
+antigen: valres\toolbox
