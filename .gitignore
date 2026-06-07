@@ -1,0 +1,33 @@
+# Composer dependencies and generated metadata
+/vendor/
+/composer.lock
+
+# PocketMine/Poggit build artifacts
+/*.phar
+/*.zip
+/build/
+/dist/
+/out/
+
+# Tooling caches
+/.phpunit.cache/
+/.php-cs-fixer.cache
+/.phpstan/
+/.psalm/
+/.composer-cache/
+
+# IDE/editor files
+/.idea/
+/.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
