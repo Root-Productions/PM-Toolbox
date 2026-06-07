@@ -1,6 +1,6 @@
 {
   "name": "valres/pmtoolbox",
-  "description": "PocketMine-MP toolbox utilities, including a lightweight RCON network interface.",
+  "description": "Best utilities libs for PocketMine-MP plugins.",
   "type": "library",
   "license": "MIT",
   "autoload": {
@@ -9,7 +9,7 @@
     }
   },
   "require": {
-    "php": ">=8.4",
+    "php": ">=8.1",
     "ext-sockets": "*",
     "opis/closure": "^4.4"
   }
