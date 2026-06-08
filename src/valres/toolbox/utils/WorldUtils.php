@@ -14,6 +14,8 @@ use RecursiveIteratorIterator;
 use SplFileInfo;
 use Throwable;
 use valres\toolbox\command\argument\WorldArgument;
+use valres\toolbox\command\CommandInterceptor;
+use valres\toolbox\command\default\world\WorldCommand;
 use valres\toolbox\event\world\WorldDeleteEvent;
 use valres\toolbox\utils\exception\WorldAlreadyExistsException;
 use valres\toolbox\utils\exception\WorldNotFoundException;
@@ -55,7 +57,7 @@ final class WorldUtils {
         }
 
         (new WorldDeleteEvent($name, $worldPath, $removedFiles))->call();
-        WorldArgument::refreshWorlds();
+        CommandInterceptor::updateCommand("worlds", new WorldCommand());
 
         return $removedFiles;
     }
@@ -98,7 +100,7 @@ final class WorldUtils {
 
         Server::getInstance()->getWorldManager()->unloadWorld($world, true);
         self::lazyLoadWorld($newName);
-        WorldArgument::refreshWorlds();
+        CommandInterceptor::updateCommand("worlds", new WorldCommand());
     }
 
     public static function duplicateWorld(string $worldName, string $duplicateName): int {
@@ -124,7 +126,7 @@ final class WorldUtils {
         }
 
         $copiedFiles = self::copyDirectory($source, $destination);
-        WorldArgument::refreshWorlds();
+        CommandInterceptor::updateCommand("worlds", new WorldCommand());
 
         return $copiedFiles;
     }
@@ -149,7 +151,7 @@ final class WorldUtils {
         try {
             $loaded = $worldManager->loadWorld($name, true);
             if ($loaded) {
-                WorldArgument::refreshWorlds();
+                CommandInterceptor::updateCommand("worlds", new WorldCommand());
             }
 
             return $loaded;

@@ -13,6 +13,7 @@ use valres\toolbox\command\argument\StringArgument;
 use valres\toolbox\command\argument\WorldArgument;
 use valres\toolbox\command\attribute\CommandPermission;
 use valres\toolbox\command\CommandContext;
+use valres\toolbox\command\CommandInterceptor;
 use valres\toolbox\command\exception\CommandConfigurationException;
 use valres\toolbox\command\SubCommand;
 use valres\toolbox\ToolboxLoader;
@@ -59,7 +60,7 @@ final class WorldCreateSubCommand extends SubCommand {
                 throw new WorldException("Unable to generate the world.");
             }
 
-            WorldArgument::refreshWorlds();
+            CommandInterceptor::updateCommand("worlds", new WorldCommand());
             $sender->sendMessage("§aWorld {$name} has been created.");
         } catch (WorldException $e) {
             $sender->sendMessage("§cWorld error: " . $e->getMessage());
