@@ -8,7 +8,7 @@ use Attribute;
 use valres\toolbox\packet\PacketDirection;
 
 #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final readonly class PacketHandler {
+final class PacketHandler {
     /** @param class-string[]|class-string|null $packets */
     public function __construct(
         public PacketDirection $direction,

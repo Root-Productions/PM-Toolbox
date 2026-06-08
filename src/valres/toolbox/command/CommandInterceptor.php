@@ -21,7 +21,7 @@ use valres\toolbox\packet\PacketHandlerInterface;
 
 class CommandInterceptor implements PacketHandlerInterface {
     public function getPacketIds(): array {
-        return [AvailableCommandsPacket::NETWORK_ID];
+        return [AvailableCommandsPacket::class];
     }
 
     public function handle(Packet $packet, NetworkSession $session): bool {
