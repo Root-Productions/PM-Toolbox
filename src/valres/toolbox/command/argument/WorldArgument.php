@@ -6,6 +6,7 @@ namespace valres\toolbox\command\argument;
 
 use pocketmine\command\CommandSender;
 use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
+use pocketmine\Server;
 use valres\toolbox\command\enum\EnumList;
 use valres\toolbox\command\exception\ArgumentException;
 use valres\toolbox\utils\WorldUtils;
@@ -38,6 +39,12 @@ class WorldArgument extends DynamicEnumArgument {
 
     public static function refreshWorlds(bool $broadcast = true): void {
         EnumList::setEnumValues("world", self::getWorlds(), $broadcast);
+
+        if ($broadcast) {
+            foreach (Server::getInstance()->getOnlinePlayers() as $player) {
+                $player->getNetworkSession()->syncAvailableCommands();
+            }
+        }
     }
 
     /** @return string[] */

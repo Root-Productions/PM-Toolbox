@@ -10,6 +10,7 @@ use pocketmine\world\WorldCreationOptions;
 use pocketmine\world\WorldException;
 use valres\toolbox\command\argument\GeneratorArgument;
 use valres\toolbox\command\argument\StringArgument;
+use valres\toolbox\command\argument\WorldArgument;
 use valres\toolbox\command\attribute\CommandPermission;
 use valres\toolbox\command\CommandContext;
 use valres\toolbox\command\exception\CommandConfigurationException;
@@ -58,6 +59,7 @@ final class WorldCreateSubCommand extends SubCommand {
                 throw new WorldException("Unable to generate the world.");
             }
 
+            WorldArgument::refreshWorlds();
             $sender->sendMessage("§aWorld {$name} has been created.");
         } catch (WorldException $e) {
             $sender->sendMessage("§cWorld error: " . $e->getMessage());
