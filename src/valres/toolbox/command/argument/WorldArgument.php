@@ -6,6 +6,7 @@ namespace valres\toolbox\command\argument;
 
 use pocketmine\command\CommandSender;
 use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
+use valres\toolbox\command\enum\EnumList;
 use valres\toolbox\command\exception\ArgumentException;
 use valres\toolbox\utils\WorldUtils;
 
@@ -20,13 +21,13 @@ class WorldArgument extends DynamicEnumArgument {
     }
 
     public function getCommandParameter(): ?CommandParameter {
-        $this->refreshGenerators();
+        self::refreshWorlds(false);
 
         return parent::getCommandParameter();
     }
 
     public function canParse(CommandSender $sender, string $test): bool {
-        $this->refreshGenerators();
+        self::refreshWorlds(false);
 
         return parent::canParse($sender, $test);
     }
@@ -35,8 +36,8 @@ class WorldArgument extends DynamicEnumArgument {
         return strtolower($arg);
     }
 
-    private function refreshGenerators(): void {
-        $this->setValues(self::getWorlds(), false);
+    public static function refreshWorlds(bool $broadcast = true): void {
+        EnumList::setEnumValues("world", self::getWorlds(), $broadcast);
     }
 
     /** @return string[] */

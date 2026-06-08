@@ -13,6 +13,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 use Throwable;
+use valres\toolbox\command\argument\WorldArgument;
 use valres\toolbox\event\world\WorldDeleteEvent;
 use valres\toolbox\utils\exception\WorldAlreadyExistsException;
 use valres\toolbox\utils\exception\WorldNotFoundException;
@@ -54,6 +55,7 @@ final class WorldUtils {
         }
 
         (new WorldDeleteEvent($name, $worldPath, $removedFiles))->call();
+        WorldArgument::refreshWorlds();
 
         return $removedFiles;
     }
@@ -96,6 +98,7 @@ final class WorldUtils {
 
         Server::getInstance()->getWorldManager()->unloadWorld($world, true);
         self::lazyLoadWorld($newName);
+        WorldArgument::refreshWorlds();
     }
 
     public static function duplicateWorld(string $worldName, string $duplicateName): int {
@@ -120,7 +123,10 @@ final class WorldUtils {
             throw new WorldAlreadyExistsException("World folder '{$duplicateName}' already exists.");
         }
 
-        return self::copyDirectory($source, $destination);
+        $copiedFiles = self::copyDirectory($source, $destination);
+        WorldArgument::refreshWorlds();
+
+        return $copiedFiles;
     }
 
     public static function lazyUnloadWorld(string $name, bool $force = false): bool {
@@ -141,7 +147,12 @@ final class WorldUtils {
         }
 
         try {
-            return $worldManager->loadWorld($name, true);
+            $loaded = $worldManager->loadWorld($name, true);
+            if ($loaded) {
+                WorldArgument::refreshWorlds();
+            }
+
+            return $loaded;
         } catch (Throwable $e) {
             throw new WorldOperationException("Unable to load world '{$name}': {$e->getMessage()}", 0, $e);
         }
