@@ -57,7 +57,7 @@ final class WorldUtils {
         }
 
         (new WorldDeleteEvent($name, $worldPath, $removedFiles))->call();
-        CommandInterceptor::updateCommand("world", new WorldCommand());
+        WorldArgument::refreshWorlds();
 
         return $removedFiles;
     }
@@ -100,7 +100,7 @@ final class WorldUtils {
 
         Server::getInstance()->getWorldManager()->unloadWorld($world, true);
         self::lazyLoadWorld($newName);
-        CommandInterceptor::updateCommand("world", new WorldCommand());
+        WorldArgument::refreshWorlds();
     }
 
     public static function duplicateWorld(string $worldName, string $duplicateName): int {
@@ -126,7 +126,7 @@ final class WorldUtils {
         }
 
         $copiedFiles = self::copyDirectory($source, $destination);
-        CommandInterceptor::updateCommand("world", new WorldCommand());
+        WorldArgument::refreshWorlds();
 
         return $copiedFiles;
     }
@@ -151,7 +151,7 @@ final class WorldUtils {
         try {
             $loaded = $worldManager->loadWorld($name, true);
             if ($loaded) {
-                CommandInterceptor::updateCommand("world", new WorldCommand());
+                WorldArgument::refreshWorlds();
             }
 
             return $loaded;
