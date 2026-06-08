@@ -6,9 +6,11 @@ namespace valres\toolbox;
 
 use pocketmine\event\EventPriority;
 use pocketmine\plugin\PluginBase;
+use valres\toolbox\command\CommandInterceptor;
 use valres\toolbox\manager\BaseManager;
 use valres\toolbox\manager\exception\ManagerException;
 use valres\toolbox\manager\ManagerHandler;
+use valres\toolbox\packet\exception\InvalidPacketHandlerException;
 use valres\toolbox\packet\PacketInterceptor;
 use valres\toolbox\packet\PacketMonitor;
 use valres\toolbox\packet\Packets;
@@ -46,7 +48,7 @@ class ToolboxLoader {
         }
     }
 
-    /** @throws ManagerException */
+    /** @throws ManagerException|InvalidPacketHandlerException */
     public static function enable(PluginBase $loader, ?RconSettings $rconSettings = null, bool $enableManagers = true): void {
         if (self::$enabled) {
             return;
@@ -65,6 +67,9 @@ class ToolboxLoader {
         if ($rconSettings !== null) {
             self::startRCON($rconSettings);
         }
+
+        Packets::createInterceptor($loader, EventPriority::HIGHEST)
+            ->registerOutgoing(new CommandInterceptor());
     }
 
     public static function getManagerHandler(): ManagerHandler {

@@ -13,6 +13,7 @@ trait RuleTrait {
         return $this;
     }
 
+    /** @return array<Rule> */
     public function getRules(): array {
         return $this->rules;
     }

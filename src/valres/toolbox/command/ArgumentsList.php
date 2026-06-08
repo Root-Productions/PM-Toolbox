@@ -55,4 +55,27 @@ final class ArgumentsList implements IteratorAggregate, Countable , ArrayAccess 
     public function get(string $key, mixed $default = null): mixed {
         return $this->arguments[$key] ?? $default;
     }
+
+    public function has(string $key): bool {
+        return array_key_exists($key, $this->arguments);
+    }
+
+    public function string(string $key, ?string $default = null): ?string {
+        $value = $this->get($key, $default);
+        return $value === null ? null : (string) $value;
+    }
+
+    public function int(string $key, ?int $default = null): ?int {
+        $value = $this->get($key, $default);
+        return $value === null ? null : (int) $value;
+    }
+
+    public function bool(string $key, ?bool $default = null): ?bool {
+        $value = $this->get($key, $default);
+        return $value === null ? null : (bool) $value;
+    }
+
+    public function sender(): CommandSender {
+        return $this->sender;
+    }
 }

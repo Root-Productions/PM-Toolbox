@@ -15,7 +15,8 @@ abstract class Argument {
     /** @throws ArgumentException */
     public function __construct(
         private string $name,
-        private readonly bool $optional = false
+        private readonly bool $optional = false,
+        private readonly mixed $default = null
     ) {
         if (str_contains($name, ' ')) {
             throw new ArgumentException("Argument 'name' cannot contain spaces: '{$name}'");
@@ -48,6 +49,14 @@ abstract class Argument {
         return $this->optional;
     }
 
+    public function getDefault(): mixed {
+        return $this->default;
+    }
+
+    public function hasDefault(): bool {
+        return $this->default !== null;
+    }
+
     /**
      * @return CommandParameter|null
      */
@@ -57,6 +66,12 @@ abstract class Argument {
 
     public function getMaxLength(): int {
         return 1;
+    }
+
+    public function getUsageFormatted(): string {
+        $value = $this->name . ':' . $this->getTypeName();
+
+        return $this->optional ? '[' . $value . ']' : '<' . $value . '>';
     }
 
     abstract public function getTypeName(): string;

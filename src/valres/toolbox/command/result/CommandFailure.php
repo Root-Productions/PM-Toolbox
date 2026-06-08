@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace valres\toolbox\command\result;
 
 use pocketmine\command\CommandSender;
+use valres\toolbox\command\rules\Rule;
 
 final class CommandFailure {
     public const INVALID_ARGUMENT = 0;
@@ -51,13 +52,18 @@ final class CommandFailure {
         return $this->data;
     }
 
-    /** @return Rules[] */
+    /** @return Rule[] */
     public function getFailedConstraints(): array {
-        return $this->data['failed_constraints'] ?? [];
+        return $this->data['failed_constraints'] ?? $this->data['rules_failed'] ?? [];
     }
 
     public function getMessage(): string {
-        return $this->data['message'] ?? $this->getDefaultMessage();
+        $message = $this->data['message'] ?? $this->getDefaultMessage();
+        if (isset($this->data['usage'])) {
+            $message .= "\nUsage: " . $this->data['usage'];
+        }
+
+        return $message;
     }
 
     private function getDefaultMessage(): string {
