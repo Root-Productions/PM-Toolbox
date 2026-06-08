@@ -6,6 +6,7 @@ namespace valres\toolbox\command\argument;
 
 use pocketmine\command\CommandSender;
 use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
+use pocketmine\Server;
 use valres\toolbox\command\exception\ArgumentException;
 use valres\toolbox\utils\WorldUtils;
 
@@ -40,13 +41,21 @@ class WorldArgument extends DynamicEnumArgument {
     }
 
     public static function refreshWorlds(bool $broadcast = true): void {
+        $worlds = self::getWorlds();
+        Server::getInstance()->getLogger()->info("[WorldArgument] Refresh requested. instances=" . count(self::$instances) . ", broadcast=" . ($broadcast ? "yes" : "no") . ", worlds=[" . implode(", ", $worlds) . "]");
+
+        if (self::$instances === []) {
+            \valres\toolbox\command\enum\EnumList::setEnumValues("world", $worlds, $broadcast);
+            return;
+        }
+
         foreach (self::$instances as $instance) {
-            $instance->refresh($broadcast);
+            $instance->refresh($broadcast, $worlds);
         }
     }
 
-    private function refresh(bool $broadcast): void {
-        $this->setValues(self::getWorlds(), $broadcast);
+    private function refresh(bool $broadcast, ?array $worlds = null): void {
+        $this->setValues($worlds ?? self::getWorlds(), $broadcast);
     }
 
     /** @return string[] */
