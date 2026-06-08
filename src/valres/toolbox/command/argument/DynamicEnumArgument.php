@@ -63,7 +63,7 @@ class DynamicEnumArgument extends Argument {
     }
 
     private function refreshCommandParameter(): void {
-        $this->commandParameter = CommandParameter::enum(
+        $this->commandParameter = CommandParameter::softEnum(
             $this->getName(),
             EnumList::getOrCreate($this->getName(), $this->getValues()),
             0,
