@@ -51,7 +51,7 @@ class EnumList {
         self::$enums[$name] = $enum;
 
         if ($broadcast && ($previous === null || $previous->getValues() !== $values)) {
-            self::broadcastUpdate($enum, UpdateSoftEnumPacket::TYPE_ADD);
+            self::broadcastUpdate($enum, $previous === null ? UpdateSoftEnumPacket::TYPE_ADD : UpdateSoftEnumPacket::TYPE_SET);
         }
 
         return $enum;

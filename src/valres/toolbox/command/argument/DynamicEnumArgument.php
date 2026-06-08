@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace valres\toolbox\command\argument;
 
 use pocketmine\command\CommandSender;
-use pocketmine\network\mcpe\protocol\types\command\CommandHardEnum;
 use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use valres\toolbox\command\enum\EnumList;
 
@@ -80,9 +79,9 @@ class DynamicEnumArgument extends Argument {
     }
 
     protected function refreshCommandParameter(): void {
-        $this->commandParameter = CommandParameter::enum(
+        $this->commandParameter = CommandParameter::softEnum(
             $this->getName(),
-            new CommandHardEnum($this->getName(), $this->values),
+            EnumList::getOrCreate($this->getName(), $this->values),
             0,
             $this->isOptional()
         );
