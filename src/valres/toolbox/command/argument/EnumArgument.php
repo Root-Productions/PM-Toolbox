@@ -8,37 +8,19 @@ use pocketmine\command\CommandSender;
 use pocketmine\network\mcpe\protocol\types\command\CommandHardEnum;
 use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 
-class EnumArgument extends Argument {
+abstract class EnumArgument extends Argument {
     /** @var array<string, mixed> */
-    private array $values = [];
+    protected const VALUES = [];
 
-    /**
-     * @param array<int|string, mixed>|bool $values Use a list for string values, an associative map for parsed values, or bool when created by CommandArgument.
-     */
-    public function __construct(string $name, array|bool $values = [], mixed $optional = false, mixed $default = null) {
-        if (is_bool($values)) {
-            $default = $optional;
-            $optional = $values;
-            $values = [];
-        }
+    public function __construct(string $name, bool $optional = false) {
+        parent::__construct($name, $optional);
 
-        if (!is_bool($optional)) {
-            $default = $optional;
-            $optional = false;
-        }
-
-        parent::__construct($name, $optional, $default);
-        $this->values = $this->normalizeValues($values);
         $this->commandParameter = CommandParameter::enum(
-            $this->getName(),
-            new CommandHardEnum($this->getName(), array_keys($this->values)),
+            $name,
+            new CommandHardEnum("", $this->getEnumValues()),
             0,
-            $this->isOptional()
+            $optional
         );
-    }
-
-    public function getTypeName(): string {
-        return "enum";
     }
 
     public function getNetworkType(): int {
@@ -46,31 +28,17 @@ class EnumArgument extends Argument {
     }
 
     public function canParse(CommandSender $sender, string $test): bool {
-        return array_key_exists(strtolower($test), $this->values);
+        return (bool) preg_match(
+            "/^(" . implode("|", array_map("\\strtolower", $this->getEnumValues())) . ")$/iu",
+            $test
+        );
     }
 
-    public function parse(CommandSender $sender, string $arg): mixed {
-        return $this->values[strtolower($arg)];
+    public function getValue(string $string): mixed {
+        return static::VALUES[strtolower($string)] ?? null;
     }
 
-    /** @return string[] */
     public function getEnumValues(): array {
-        return array_keys($this->values);
-    }
-
-    private function normalizeValues(array $values): array {
-        $normalized = [];
-
-        foreach ($values as $key => $value) {
-            $enumValue = is_int($key) ? (string) $value : (string) $key;
-            $enumValue = trim($enumValue);
-            if ($enumValue === "") {
-                continue;
-            }
-
-            $normalized[strtolower($enumValue)] = is_int($key) ? $enumValue : $value;
-        }
-
-        return $normalized;
+        return array_keys(static::VALUES);
     }
 }
