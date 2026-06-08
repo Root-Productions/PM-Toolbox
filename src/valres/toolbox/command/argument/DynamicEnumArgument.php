@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace valres\toolbox\command\argument;
 
 use pocketmine\command\CommandSender;
+use pocketmine\network\mcpe\protocol\types\command\CommandHardEnum;
 use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use valres\toolbox\command\enum\EnumList;
 
 class DynamicEnumArgument extends Argument {
+    /** @var string[] */
+    private array $values;
+
     public function __construct(string $name, array|bool $values = [], mixed $optional = false, mixed $default = null) {
         if (is_bool($values)) {
             $default = $optional;
@@ -22,7 +26,8 @@ class DynamicEnumArgument extends Argument {
         }
 
         parent::__construct($name, $optional, $default);
-        EnumList::getOrCreate($this->getName(), $values);
+        $this->values = $this->normalizeValues($values);
+        EnumList::setEnumValues($this->getName(), $this->values, true);
         $this->refreshCommandParameter();
     }
 
@@ -50,21 +55,49 @@ class DynamicEnumArgument extends Argument {
 
     /** @return string[] */
     public function getValues(): array {
-        return EnumList::getEnumByName($this->getName())?->getValues() ?? [];
+        return $this->values;
     }
 
     /** @param string[] $values */
     public function setValues(array $values, bool $broadcast = true): void {
-        EnumList::setEnumValues($this->getName(), $values, $broadcast);
+        $this->values = $this->normalizeValues($values);
+        EnumList::setEnumValues($this->getName(), $this->values, $broadcast);
         $this->refreshCommandParameter();
     }
 
-    private function refreshCommandParameter(): void {
-        $this->commandParameter = CommandParameter::softEnum(
+    public function addValue(string $value, bool $broadcast = true): void {
+        $values = $this->values;
+        $values[] = $value;
+        $this->setValues($values, $broadcast);
+    }
+
+    public function removeValue(string $value, bool $broadcast = true): void {
+        $value = strtolower($value);
+        $this->setValues(array_values(array_filter(
+            $this->values,
+            static fn(string $current): bool => strtolower($current) !== $value
+        )), $broadcast);
+    }
+
+    protected function refreshCommandParameter(): void {
+        $this->commandParameter = CommandParameter::enum(
             $this->getName(),
-            EnumList::getOrCreate($this->getName(), $this->getValues()),
+            new CommandHardEnum($this->getName(), $this->values),
             0,
             $this->isOptional()
         );
+    }
+
+    /** @return string[] */
+    private function normalizeValues(array $values): array {
+        $normalized = [];
+        foreach ($values as $value) {
+            $value = trim((string) $value);
+            if ($value !== "") {
+                $normalized[strtolower($value)] = $value;
+            }
+        }
+
+        return array_values($normalized);
     }
 }
