@@ -6,6 +6,9 @@ namespace valres\toolbox\command;
 
 use pocketmine\command\Command as PMCommand;
 use pocketmine\command\CommandSender;
+use pocketmine\permission\DefaultPermissions;
+use pocketmine\permission\Permission;
+use pocketmine\permission\PermissionManager;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
 use ReflectionClass;
@@ -13,6 +16,7 @@ use Throwable;
 use valres\toolbox\command\argument\Argument;
 use valres\toolbox\command\attribute\CommandArgument;
 use valres\toolbox\command\attribute\CommandInfo;
+use valres\toolbox\command\attribute\CommandPermission;
 use valres\toolbox\command\argument\ArgumentTrait;
 use valres\toolbox\command\exception\CommandConfigurationException;
 use valres\toolbox\command\result\CommandFailure;
@@ -35,14 +39,12 @@ abstract class Command extends PMCommand implements PluginOwned {
 
     /** @throws CommandConfigurationException */
     public function __construct(?string $name = null, ?string $description = null, array $aliases = []) {
-        [$name, $description, $aliases, $permission] = $this->resolveMetadata($name, $description, $aliases);
+        [$name, $description, $aliases] = $this->resolveMetadata($name, $description, $aliases);
 
         parent::__construct($name, $description, null, $aliases);
-        if ($permission !== null) {
-            $this->setPermission($permission);
-        }
 
         $this->plugin = ToolboxLoader::getLoader();
+        $this->loadAttributePermission();
         $this->loadAttributeArguments();
         $this->configure();
         $this->setUsage(implode("\n", $this->getUsageLines()));
@@ -152,7 +154,6 @@ abstract class Command extends PMCommand implements PluginOwned {
 
     /** @throws CommandConfigurationException */
     private function resolveMetadata(?string $name, ?string $description, array $aliases): array {
-        $permission = null;
         $attributes = (new ReflectionClass($this))->getAttributes(CommandInfo::class);
         if ($attributes !== []) {
             /** @var CommandInfo $info */
@@ -160,14 +161,60 @@ abstract class Command extends PMCommand implements PluginOwned {
             $name ??= $info->name;
             $description ??= $info->description;
             $aliases = $aliases === [] ? $info->aliases : $aliases;
-            $permission = $info->permission;
         }
 
         if ($name === null || $name === "") {
             throw new CommandConfigurationException("Command name is required");
         }
 
-        return [$name, $description ?? "", $aliases, $permission];
+        return [$name, $description ?? "", $aliases];
+    }
+
+    /** @throws CommandConfigurationException */
+    private function loadAttributePermission(): void {
+        $reflection = new ReflectionClass($this);
+        $permission = null;
+        $isOp = true;
+
+        $permissionAttributes = $reflection->getAttributes(CommandPermission::class);
+        if ($permissionAttributes !== []) {
+            /** @var CommandPermission $definition */
+            $definition = $permissionAttributes[0]->newInstance();
+            $permission = $definition->permission;
+            $isOp = $definition->isOp;
+        } else {
+            $infoAttributes = $reflection->getAttributes(CommandInfo::class);
+            if ($infoAttributes !== []) {
+                /** @var CommandInfo $info */
+                $info = $infoAttributes[0]->newInstance();
+                $permission = $info->permission;
+            }
+        }
+
+        if ($permission === null || $permission === "") {
+            return;
+        }
+
+        $this->registerPermission($permission, $isOp);
+        $this->setPermission($permission);
+    }
+
+    private function registerPermission(string $permission, bool $isOp): void {
+        $permissionManager = PermissionManager::getInstance();
+        $permissionObject = $permissionManager->getPermission($permission);
+
+        if ($permissionObject === null) {
+            $permissionObject = new Permission($permission, $this->getDescription());
+            $permissionManager->addPermission($permissionObject);
+        }
+
+        $parentPermission = $permissionManager->getPermission(
+            $isOp ? DefaultPermissions::ROOT_OPERATOR : DefaultPermissions::ROOT_USER
+        );
+
+        if ($parentPermission !== null) {
+            $parentPermission->addChild($permission, true);
+        }
     }
 
     /** @throws CommandConfigurationException */
