@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace valres\toolbox\command;
 
+use pocketmine\command\Command as PMCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
@@ -21,12 +22,18 @@ use valres\toolbox\packet\PacketHandlerInterface;
 use valres\toolbox\ToolboxLoader;
 
 class CommandInterceptor implements PacketHandlerInterface {
+    private static bool $isIntercepting = false;
+
     public function getPacketIds(): array {
         return [AvailableCommandsPacket::class];
     }
 
     public function handle(Packet $packet, NetworkSession $session): bool {
         if (!$packet instanceof AvailableCommandsPacket) {
+            return true;
+        }
+
+        if (self::$isIntercepting) {
             return true;
         }
 
@@ -37,40 +44,44 @@ class CommandInterceptor implements PacketHandlerInterface {
 
         $disassembled = AvailableCommandsPacketDisassembler::disassemble($packet);
         $commandDataList = $disassembled->commandData;
+        $filtered = [];
 
         $server = Server::getInstance();
-        foreach ($commandDataList as $index => $commandData) {
+        foreach ($commandDataList as $commandData) {
             $commandName = $commandData->getName();
             $command = $server->getCommandMap()->getCommand($commandName);
+            $keep = true;
 
             if ($command instanceof Command) {
                 foreach ($command->getRules() as $rule) {
                     if (!$rule->canSee($player)) {
-                        unset($commandDataList[$index]);
-                        continue 2;
+                        $keep = false;
+                        break;
                     }
                 }
 
-                $commandData->overloads = $this->getOverloads($player, $command);
+                if ($keep) {
+                    $commandData->overloads = $this->getOverloads($player, $command);
+                }
+            }
+
+            if ($keep) {
+                $filtered[] = $commandData;
             }
         }
 
-        $rebuilt = AvailableCommandsPacketAssembler::assemble(
-            array_values($commandDataList),
-            $disassembled->unusedHardEnums,
-            [...$disassembled->unusedSoftEnums, ...array_values(EnumList::getEnums())]
-        );
+        self::$isIntercepting = true;
+        try {
+            $session->sendDataPacket(AvailableCommandsPacketAssembler::assemble(
+                $filtered,
+                [],
+                array_values(EnumList::getEnums())
+            ));
+        } finally {
+            self::$isIntercepting = false;
+        }
 
-        $packet->enumValues = $rebuilt->enumValues;
-        $packet->chainedSubCommandValues = $rebuilt->chainedSubCommandValues;
-        $packet->postfixes = $rebuilt->postfixes;
-        $packet->enums = $rebuilt->enums;
-        $packet->chainedSubCommandData = $rebuilt->chainedSubCommandData;
-        $packet->commandData = $rebuilt->commandData;
-        $packet->softEnums = $rebuilt->softEnums;
-        $packet->enumConstraints = $rebuilt->enumConstraints;
-
-        return true;
+        return false;
     }
 
     /**
@@ -127,6 +138,7 @@ class CommandInterceptor implements PacketHandlerInterface {
             foreach ($indexes as $k => $idx) {
                 $argument = $sets[$k][$idx];
                 $param = clone $argument->getCommandParameter();
+                $this->refreshHardEnumName($param);
                 $params[] = $param;
             }
             $overloads[] = new CommandOverload(false, $params);
@@ -185,11 +197,11 @@ class CommandInterceptor implements PacketHandlerInterface {
         return "subcommand#" . spl_object_id($subCommand);
     }
 
-    public static function updateCommand(string $name, Command $newCommand): void {
+    public static function updateCommand(string $name, PMCommand $newCommand): void {
         $commandMap = Server::getInstance()->getCommandMap();
         $oldCommand = $commandMap->getCommand($name);
 
-        if ($oldCommand instanceof Command) {
+        if ($oldCommand instanceof PMCommand) {
             $commandMap->unregister($oldCommand);
         }
 
@@ -197,5 +209,16 @@ class CommandInterceptor implements PacketHandlerInterface {
         foreach (Server::getInstance()->getOnlinePlayers() as $player) {
             $player->getNetworkSession()->syncAvailableCommands();
         }
+    }
+
+    private function refreshHardEnumName(CommandParameter $param): void {
+        if (!isset($param->enum) || !$param->enum instanceof CommandHardEnum) {
+            return;
+        }
+
+        $param->enum = new CommandHardEnum(
+            "enum#" . spl_object_id($param->enum),
+            $param->enum->getValues()
+        );
     }
 }
