@@ -9,9 +9,6 @@ use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use valres\toolbox\command\enum\EnumList;
 
 class DynamicEnumArgument extends Argument {
-    /**
-     * @param string[]|bool $values Initial enum values, or bool when created by CommandArgument.
-     */
     public function __construct(string $name, array|bool $values = [], mixed $optional = false, mixed $default = null) {
         if (is_bool($values)) {
             $default = $optional;

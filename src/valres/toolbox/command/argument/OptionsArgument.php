@@ -9,8 +9,8 @@ use valres\toolbox\command\exception\ArgumentException;
 
 class OptionsArgument extends EnumArgument {
     /** @throws ArgumentException */
-    public function __construct(string $name, private readonly array $enumValues, bool $optional = false, mixed $default = null) {
-        parent::__construct($name, $enumValues, $optional, $default);
+    public function __construct(string $name, private readonly array $enumValues, bool $optional = false) {
+        parent::__construct($name, $optional);
     }
 
     public function getTypeName(): string {
