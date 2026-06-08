@@ -183,4 +183,18 @@ class CommandInterceptor implements PacketHandlerInterface {
     private function uniqueEnumName(SubCommand $subCommand): string {
         return "subcommand#" . spl_object_id($subCommand);
     }
+
+    public static function updateCommand(string $name, Command $newCommand): void {
+        $commandMap = Server::getInstance()->getCommandMap();
+        $oldCommand = $commandMap->getCommand($name);
+
+        if ($oldCommand instanceof Command) {
+            $commandMap->unregister($oldCommand);
+        }
+
+        $commandMap->register("pm-toolbox", $newCommand);
+        foreach (Server::getInstance()->getOnlinePlayers() as $player) {
+            $player->getNetworkSession()->syncAvailableCommands();
+        }
+    }
 }
