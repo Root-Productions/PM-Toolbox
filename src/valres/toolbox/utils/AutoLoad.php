@@ -40,7 +40,7 @@ final class AutoLoad {
         self::$registry->autoload(
             $directory,
             Command::class,
-            fn (Command $cmd) => ToolboxLoader::getLoader()->getServer()->getCommandMap()->register("auto-load", $cmd),
+            fn (Command $cmd) => ToolboxLoader::registerCommand($cmd),
             "command"
         );
     }

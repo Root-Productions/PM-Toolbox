@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace valres\toolbox;
 
+use InvalidArgumentException;
 use pocketmine\event\EventPriority;
+use pocketmine\command\Command;
 use pocketmine\plugin\PluginBase;
 use valres\toolbox\command\CommandInterceptor;
 use valres\toolbox\command\default\world\WorldCommand;
@@ -21,7 +23,10 @@ use valres\toolbox\rcon\RconInterface;
 use valres\toolbox\rcon\RconSettings;
 
 class ToolboxLoader {
+    public const COMMAND_FALLBACK_PREFIX = "pmtoolbox";
+
     private static PluginBase $loader;
+    private static string $commandFallbackPrefix = self::COMMAND_FALLBACK_PREFIX;
 
     private static ?ManagerHandler $managerHandler = null;
 
@@ -69,9 +74,7 @@ class ToolboxLoader {
             self::startRCON($rconSettings);
         }
 
-        $loader->getServer()->getCommandMap()->registerAll("pm-toolbox", [
-            new WorldCommand()
-        ]);
+        self::registerCommand(new WorldCommand());
 
         Packets::createInterceptor($loader, EventPriority::HIGHEST)
             ->registerOutgoing(new CommandInterceptor());
@@ -146,6 +149,26 @@ class ToolboxLoader {
 
     public static function createPacketInterceptor(?PluginBase $plugin = null, int $priority = EventPriority::NORMAL, bool $handleCancelled = false): PacketInterceptor {
         return Packets::createInterceptor($plugin ?? self::$loader, $priority, $handleCancelled);
+    }
+
+    public static function setCommandFallbackPrefix(string $fallbackPrefix): void {
+        $fallbackPrefix = strtolower(trim($fallbackPrefix));
+        if ($fallbackPrefix === "" || str_contains($fallbackPrefix, ":")) {
+            throw new InvalidArgumentException("Command fallback prefix must be a non-empty prefix without ':'.");
+        }
+
+        self::$commandFallbackPrefix = $fallbackPrefix;
+    }
+
+    public static function getCommandFallbackPrefix(): string {
+        return self::$commandFallbackPrefix;
+    }
+
+    public static function registerCommand(Command $command, ?string $fallbackPrefix = null): bool {
+        return self::$loader->getServer()->getCommandMap()->register(
+            $fallbackPrefix ?? self::$commandFallbackPrefix,
+            $command
+        );
     }
 
     public static function startRCON(RconSettings $settings): void {

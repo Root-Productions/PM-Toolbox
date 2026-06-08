@@ -18,6 +18,7 @@ use pocketmine\Server;
 use valres\toolbox\command\argument\Argument;
 use valres\toolbox\command\enum\EnumList;
 use valres\toolbox\packet\PacketHandlerInterface;
+use valres\toolbox\ToolboxLoader;
 
 class CommandInterceptor implements PacketHandlerInterface {
     public function getPacketIds(): array {
@@ -192,7 +193,7 @@ class CommandInterceptor implements PacketHandlerInterface {
             $commandMap->unregister($oldCommand);
         }
 
-        $commandMap->register("pm-toolbox", $newCommand);
+        ToolboxLoader::registerCommand($newCommand);
         foreach (Server::getInstance()->getOnlinePlayers() as $player) {
             $player->getNetworkSession()->syncAvailableCommands();
         }

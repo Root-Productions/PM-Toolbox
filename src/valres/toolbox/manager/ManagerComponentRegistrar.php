@@ -94,7 +94,7 @@ final class ManagerComponentRegistrar {
         return $this->registerClassesFromDir(
             $dir,
             Command::class,
-            fn (Command $command) => $loader->getServer()->getCommandMap()->register($loader->getName(), $command)
+            fn (Command $command) => ToolboxLoader::registerCommand($command)
         );
     }
 

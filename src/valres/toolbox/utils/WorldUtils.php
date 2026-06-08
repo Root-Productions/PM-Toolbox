@@ -14,8 +14,6 @@ use RecursiveIteratorIterator;
 use SplFileInfo;
 use Throwable;
 use valres\toolbox\command\argument\WorldArgument;
-use valres\toolbox\command\CommandInterceptor;
-use valres\toolbox\command\default\world\WorldCommand;
 use valres\toolbox\event\world\WorldDeleteEvent;
 use valres\toolbox\utils\exception\WorldAlreadyExistsException;
 use valres\toolbox\utils\exception\WorldNotFoundException;
@@ -30,43 +28,33 @@ final class WorldUtils {
 
         $server = Server::getInstance();
         $worldManager = $server->getWorldManager();
-        $server->getLogger()->info("[WorldUtils] Removing world '{$name}'.");
 
         if ($worldManager->isWorldLoaded($name)) {
-            $server->getLogger()->info("[WorldUtils] World '{$name}' is loaded, preparing unload.");
             $world = self::getWorldByNameNonNull($name);
             $defaultWorld = self::getDefaultWorldNonNull();
 
-            $teleported = 0;
             foreach ($world->getPlayers() as $player) {
                 if ($defaultWorld !== $world) {
                     $player->teleport($defaultWorld->getSpawnLocation());
-                    $teleported++;
                 }
             }
-            $server->getLogger()->info("[WorldUtils] Teleported {$teleported} player(s) out of '{$name}'.");
 
             if (!$worldManager->unloadWorld($world, true)) {
                 throw new WorldOperationException("Unable to unload world '{$name}' before deletion.");
             }
-            $server->getLogger()->info("[WorldUtils] World '{$name}' unloaded.");
         }
 
         $worldPath = self::getWorldPath($name);
-        $server->getLogger()->info("[WorldUtils] World path: {$worldPath}");
         if (!is_dir($worldPath)) {
             throw new WorldNotFoundException("World folder '{$name}' does not exist.");
         }
 
         $removedFiles = self::deleteDirectoryContents($worldPath);
-        $server->getLogger()->info("[WorldUtils] Removed {$removedFiles} file/directory entries from '{$name}'.");
         if (!@rmdir($worldPath)) {
             throw new WorldOperationException("Unable to remove world folder '{$worldPath}'.");
         }
-        $server->getLogger()->info("[WorldUtils] Removed root world folder '{$worldPath}'.");
 
         (new WorldDeleteEvent($name, $worldPath, $removedFiles))->call();
-        $server->getLogger()->info("[WorldUtils] WorldDeleteEvent called for '{$name}'. Refreshing world enum.");
         WorldArgument::refreshWorlds();
 
         return $removedFiles;
