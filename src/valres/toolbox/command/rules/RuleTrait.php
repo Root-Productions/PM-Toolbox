@@ -26,7 +26,7 @@ trait RuleTrait {
         $failed = [];
 
         foreach ($this->rules as $rule) {
-            if ($rule->canSee($sender)) {
+            if ($rule->canExecute($sender)) {
                 $rule->success($sender);
             } else {
                 $rule->fail($sender);
@@ -35,5 +35,11 @@ trait RuleTrait {
         }
 
         return new RuleResult(empty($failed), $failed);
+    }
+
+    public function notifyRulesExecuted(CommandSender $sender): void {
+        foreach ($this->rules as $rule) {
+            $rule->onExecuted($sender);
+        }
     }
 }

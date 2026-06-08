@@ -116,6 +116,7 @@ abstract class SubCommand {
         $context = new CommandContext($sender, $arguments, $label, $rawArgs, $command, $this);
         try {
             $returnValue = $this->onRun($context);
+            $this->notifyRulesExecuted($sender);
         } catch (Throwable $throwable) {
             return new CommandFailure($sender, CommandFailure::EXECUTION_ERROR, [
                 "message" => $throwable->getMessage(),

@@ -119,6 +119,7 @@ abstract class Command extends PMCommand implements PluginOwned {
                 if ($result instanceof CommandFailure) {
                     $this->fail($result);
                 } else {
+                    $this->notifyRulesExecuted($sender);
                     $this->success($result);
                 }
                 return;
@@ -138,6 +139,7 @@ abstract class Command extends PMCommand implements PluginOwned {
             $this->argumentsList = $this->parseArguments($sender, $args);
             $context = new CommandContext($sender, $this->argumentsList, $commandLabel, $args, $this);
             $returnValue = $this->onRun($context);
+            $this->notifyRulesExecuted($sender);
             $this->success(new CommandSuccess($sender, $this->argumentsList, $commandLabel, $returnValue));
         } catch (Throwable $throwable) {
             $this->fail(new CommandFailure($sender, CommandFailure::EXECUTION_ERROR, [
