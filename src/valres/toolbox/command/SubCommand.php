@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace valres\toolbox\command;
 
 use pocketmine\command\CommandSender;
+use ReflectionClass;
 use Throwable;
 use valres\toolbox\command\argument\ArgumentTrait;
+use valres\toolbox\command\attribute\CommandPermission;
 use valres\toolbox\command\exception\CommandConfigurationException;
 use valres\toolbox\command\result\CommandFailure;
 use valres\toolbox\command\result\CommandSuccess;
+use valres\toolbox\command\rules\PermissionRule;
 use valres\toolbox\command\rules\RuleTrait;
 
 abstract class SubCommand {
@@ -21,6 +24,13 @@ abstract class SubCommand {
 
     /** @var array<SubCommand> */
     private array $subCommands = [];
+
+    private ?Command $command = null;
+
+    /** @var string[] */
+    private array $permissionParents = [];
+
+    private ?string $permission = null;
 
     public function __construct(
         private readonly string $name,
@@ -54,6 +64,9 @@ abstract class SubCommand {
         }
 
         $this->subCommands[] = $subCommand;
+        if ($this->command !== null) {
+            $subCommand->bindTo($this->command, [...$this->permissionParents, $this->name]);
+        }
         return $this;
     }
 
@@ -115,6 +128,27 @@ abstract class SubCommand {
 
     abstract protected function onRun(CommandContext $context): mixed;
 
+    /** @param string[] $parents */
+    public function bindTo(Command $command, array $parents = []): void {
+        $this->command = $command;
+        $this->permissionParents = $parents;
+
+        [$permission, $isOp] = $this->resolvePermission($command, $parents);
+        if ($this->permission !== $permission) {
+            $this->permission = $permission;
+            $command->registerPermission($permission, $isOp, $this->description);
+            $this->addRule(new PermissionRule($permission));
+        }
+
+        foreach ($this->subCommands as $subCommand) {
+            $subCommand->bindTo($command, [...$parents, $this->name]);
+        }
+    }
+
+    public function getPermission(): ?string {
+        return $this->permission;
+    }
+
     /** @return string[] */
     public function getUsageLines(string $parentLabel): array {
         $label = $parentLabel . " " . $this->name;
@@ -125,5 +159,26 @@ abstract class SubCommand {
         }
 
         return array_values(array_unique($lines));
+    }
+
+    /** @param string[] $parents */
+    private function resolvePermission(Command $command, array $parents): array {
+        $permission = implode(".", [
+            strtolower($this->name),
+            ...array_reverse(array_map('strtolower', $parents)),
+            strtolower($command->getName()),
+            "command"
+        ]);
+        $isOp = true;
+
+        $attributes = (new ReflectionClass($this))->getAttributes(CommandPermission::class);
+        if ($attributes !== []) {
+            /** @var CommandPermission $definition */
+            $definition = $attributes[0]->newInstance();
+            $permission = $definition->permission ?? $permission;
+            $isOp = $definition->isOp;
+        }
+
+        return [$permission, $isOp];
     }
 }

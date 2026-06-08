@@ -21,6 +21,7 @@ use valres\toolbox\command\argument\ArgumentTrait;
 use valres\toolbox\command\exception\CommandConfigurationException;
 use valres\toolbox\command\result\CommandFailure;
 use valres\toolbox\command\result\CommandSuccess;
+use valres\toolbox\command\rules\PermissionRule;
 use valres\toolbox\command\rules\RuleTrait;
 use valres\toolbox\ToolboxLoader;
 
@@ -34,6 +35,8 @@ abstract class Command extends PMCommand implements PluginOwned {
 
     /** @var array<SubCommand> */
     private array $subCommands = [];
+
+    private string $commandPermission;
 
     protected ArgumentsList $argumentsList;
 
@@ -66,6 +69,7 @@ abstract class Command extends PMCommand implements PluginOwned {
         }
 
         $this->subCommands[] = $subCommand;
+        $subCommand->bindTo($this);
         return $this;
     }
 
@@ -170,41 +174,42 @@ abstract class Command extends PMCommand implements PluginOwned {
         return [$name, $description ?? "", $aliases];
     }
 
-    /** @throws CommandConfigurationException */
     private function loadAttributePermission(): void {
         $reflection = new ReflectionClass($this);
-        $permission = null;
+        $permission = strtolower($this->getName()) . ".command";
         $isOp = true;
 
         $permissionAttributes = $reflection->getAttributes(CommandPermission::class);
         if ($permissionAttributes !== []) {
             /** @var CommandPermission $definition */
             $definition = $permissionAttributes[0]->newInstance();
-            $permission = $definition->permission;
+            $permission = $definition->permission ?? $permission;
             $isOp = $definition->isOp;
         } else {
             $infoAttributes = $reflection->getAttributes(CommandInfo::class);
             if ($infoAttributes !== []) {
                 /** @var CommandInfo $info */
                 $info = $infoAttributes[0]->newInstance();
-                $permission = $info->permission;
+                $permission = $info->permission ?? $permission;
             }
         }
 
-        if ($permission === null || $permission === "") {
+        if ($permission === "") {
             return;
         }
 
+        $this->commandPermission = $permission;
         $this->registerPermission($permission, $isOp);
         $this->setPermission($permission);
+        $this->addRule(new PermissionRule($permission));
     }
 
-    private function registerPermission(string $permission, bool $isOp): void {
+    public function registerPermission(string $permission, bool $isOp, ?string $description = null): void {
         $permissionManager = PermissionManager::getInstance();
         $permissionObject = $permissionManager->getPermission($permission);
 
         if ($permissionObject === null) {
-            $permissionObject = new Permission($permission, $this->getDescription());
+            $permissionObject = new Permission($permission, $description ?? $this->getDescription());
             $permissionManager->addPermission($permissionObject);
         }
 
@@ -212,9 +217,11 @@ abstract class Command extends PMCommand implements PluginOwned {
             $isOp ? DefaultPermissions::ROOT_OPERATOR : DefaultPermissions::ROOT_USER
         );
 
-        if ($parentPermission !== null) {
-            $parentPermission->addChild($permission, true);
-        }
+        $parentPermission?->addChild($permission, true);
+    }
+
+    public function getCommandPermission(): string {
+        return $this->commandPermission;
     }
 
     /** @throws CommandConfigurationException */
