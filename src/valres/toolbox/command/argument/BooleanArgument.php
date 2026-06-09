@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace valres\toolbox\command\argument;
 
-class BooleanArgument extends EnumArgument {
+class BooleanArgument extends OptionsArgument {
     public function __construct(string $name, bool $optional = false, mixed $default = null) {
         parent::__construct($name, [
             "true" => true,

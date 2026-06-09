@@ -12,8 +12,8 @@ abstract class EnumArgument extends Argument {
     /** @var array<string, mixed> */
     protected const VALUES = [];
 
-    public function __construct(string $name, bool $optional = false) {
-        parent::__construct($name, $optional);
+    public function __construct(string $name, bool $optional = false, mixed $default = null) {
+        parent::__construct($name, $optional, $default);
 
         $this->commandParameter = CommandParameter::enum(
             $name,
@@ -29,7 +29,7 @@ abstract class EnumArgument extends Argument {
 
     public function canParse(CommandSender $sender, string $test): bool {
         return (bool) preg_match(
-            "/^(" . implode("|", array_map("\\strtolower", $this->getEnumValues())) . ")$/iu",
+            "/^(" . implode("|", array_map(static fn(string $value): string => preg_quote(strtolower($value), "/"), $this->getEnumValues())) . ")$/iu",
             $test
         );
     }
@@ -39,6 +39,6 @@ abstract class EnumArgument extends Argument {
     }
 
     public function getEnumValues(): array {
-        return array_keys(static::VALUES);
+        return array_values(array_map(static fn(string|int $value): string => (string) $value, array_keys(static::VALUES)));
     }
 }
