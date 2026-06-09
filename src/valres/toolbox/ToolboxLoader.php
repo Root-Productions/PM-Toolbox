@@ -76,7 +76,6 @@ class ToolboxLoader {
         }
 
         self::registerCommand(new WorldsCommand());
-        DduiManager::init($loader);
 
         Packets::createInterceptor($loader, EventPriority::HIGHEST)
             ->registerOutgoing(new CommandInterceptor());
