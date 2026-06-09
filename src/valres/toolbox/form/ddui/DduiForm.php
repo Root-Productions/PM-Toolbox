@@ -108,14 +108,13 @@ final class DduiForm {
         $formId = $manager->nextFormId();
         $this->formId = $formId;
 
-        $this->player->getNetworkSession()->sendDataPacket(ClientboundDataDrivenUIShowScreenPacket::create("minecraft:custom_form", $formId, null));
-
         $payload = $this->composer->compose($manager, $playerUuid, $formId, $this->title, $this->closeButton, $this->elements);
         $updateCount = $manager->nextUpdateCountFor($playerUuid);
         $this->player->getNetworkSession()->sendDataPacket(DduiDataStorePacket::create([
             new DduiDataStoreChange("minecraft", "custom_form_data", $updateCount, $payload),
             new DduiDataStoreChange("minecraft", "ddui_form_active", $updateCount, new DduiBoolValue(true)),
         ]));
+        $this->player->getNetworkSession()->sendDataPacket(ClientboundDataDrivenUIShowScreenPacket::create("minecraft:custom_form", $formId, null));
 
         $this->showing = true;
         $manager->registerForm($playerUuid, $formId, $this);
