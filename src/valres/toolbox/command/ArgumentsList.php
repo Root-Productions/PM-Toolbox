@@ -10,6 +10,7 @@ use Countable;
 use InvalidArgumentException;
 use IteratorAggregate;
 use pocketmine\command\CommandSender;
+use pocketmine\entity\Entity;
 use Traversable;
 
 final class ArgumentsList implements IteratorAggregate, Countable , ArrayAccess {
@@ -73,6 +74,34 @@ final class ArgumentsList implements IteratorAggregate, Countable , ArrayAccess 
     public function bool(string $key, ?bool $default = null): ?bool {
         $value = $this->get($key, $default);
         return $value === null ? null : (bool) $value;
+    }
+
+    /** @return Entity[] */
+    public function resolveTargets(callable|string $key = "target", ?callable $callback = null, bool $defaultToSender = true): array {
+        if (is_callable($key)) {
+            $callback = $key;
+            $key = "target";
+        }
+
+        $target = $this->get($key);
+
+        if ($target === null) {
+            $targets = $defaultToSender && $this->sender instanceof Entity ? [$this->sender] : [];
+        } elseif ($target instanceof Entity) {
+            $targets = [$target];
+        } elseif (is_array($target)) {
+            $targets = array_values(array_filter($target, static fn(mixed $value): bool => $value instanceof Entity));
+        } else {
+            $targets = [];
+        }
+
+        if ($callback !== null) {
+            foreach ($targets as $entity) {
+                $callback($entity);
+            }
+        }
+
+        return $targets;
     }
 
     public function sender(): CommandSender {

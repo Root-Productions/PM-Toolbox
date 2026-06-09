@@ -19,7 +19,7 @@ use valres\toolbox\command\SubCommand;
 use valres\toolbox\ToolboxLoader;
 
 #[CommandPermission(isOp: true)]
-final class WorldCreateSubCommand extends SubCommand {
+final class WorldsCreateSubCommand extends SubCommand {
     public function __construct() {
         parent::__construct("create", "Create a world");
     }
@@ -60,7 +60,7 @@ final class WorldCreateSubCommand extends SubCommand {
                 throw new WorldException("Unable to generate the world.");
             }
 
-            CommandInterceptor::updateCommand("worlds", new WorldCommand());
+            CommandInterceptor::updateCommand("worlds", new WorldsCommand());
             $sender->sendMessage("§aWorld {$name} has been created.");
         } catch (WorldException $e) {
             $sender->sendMessage("§cWorld error: " . $e->getMessage());

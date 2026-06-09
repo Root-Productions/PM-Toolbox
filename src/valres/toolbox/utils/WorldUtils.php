@@ -13,10 +13,10 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 use Throwable;
-use valres\toolbox\command\argument\WorldArgument;
 use valres\toolbox\command\CommandInterceptor;
-use valres\toolbox\command\default\world\WorldCommand;
+use valres\toolbox\command\default\world\WorldsCommand;
 use valres\toolbox\event\world\WorldDeleteEvent;
+use valres\toolbox\ToolboxLoader;
 use valres\toolbox\utils\exception\WorldAlreadyExistsException;
 use valres\toolbox\utils\exception\WorldNotFoundException;
 use valres\toolbox\utils\exception\WorldOperationException;
@@ -27,6 +27,7 @@ final class WorldUtils {
 
     public static function removeWorld(string $name): int {
         self::assertValidWorldName($name);
+        self::assertWorldUnlocked($name);
 
         $server = Server::getInstance();
         $worldManager = $server->getWorldManager();
@@ -57,7 +58,7 @@ final class WorldUtils {
         }
 
         (new WorldDeleteEvent($name, $worldPath, $removedFiles))->call();
-        CommandInterceptor::updateCommand("worlds", new WorldCommand());
+        CommandInterceptor::updateCommand("worlds", new WorldsCommand());
 
         return $removedFiles;
     }
@@ -65,6 +66,7 @@ final class WorldUtils {
     public static function renameWorld(string $oldName, string $newName): void {
         self::assertValidWorldName($oldName);
         self::assertValidWorldName($newName);
+        self::assertWorldUnlocked($oldName);
 
         if ($oldName === $newName) {
             return;
@@ -100,7 +102,7 @@ final class WorldUtils {
 
         Server::getInstance()->getWorldManager()->unloadWorld($world, true);
         self::lazyLoadWorld($newName);
-        CommandInterceptor::updateCommand("worlds", new WorldCommand());
+        CommandInterceptor::updateCommand("worlds", new WorldsCommand());
     }
 
     public static function duplicateWorld(string $worldName, string $duplicateName): int {
@@ -126,9 +128,93 @@ final class WorldUtils {
         }
 
         $copiedFiles = self::copyDirectory($source, $destination);
-        CommandInterceptor::updateCommand("worlds", new WorldCommand());
+        CommandInterceptor::updateCommand("worlds", new WorldsCommand());
 
         return $copiedFiles;
+    }
+
+    public static function backupWorld(string $worldName, ?string $backupName = null): int {
+        self::assertValidWorldName($worldName);
+
+        $server = Server::getInstance();
+        $worldManager = $server->getWorldManager();
+
+        if (!$worldManager->isWorldGenerated($worldName)) {
+            throw new WorldNotFoundException("World '{$worldName}' is not generated.");
+        }
+
+        if ($worldManager->isWorldLoaded($worldName)) {
+            self::getWorldByNameNonNull($worldName)->save(true);
+        }
+
+        $backupName ??= $worldName . "-" . date("Ymd-His");
+        self::assertValidBackupName($backupName);
+
+        $destination = self::getBackupPath($backupName);
+        if (file_exists($destination)) {
+            throw new WorldAlreadyExistsException("Backup '{$backupName}' already exists.");
+        }
+
+        return self::copyDirectory(self::getWorldPath($worldName), $destination);
+    }
+
+    public static function restoreWorld(string $backupName, ?string $worldName = null): int {
+        self::assertValidBackupName($backupName);
+
+        $worldName ??= preg_replace('/-\d{8}-\d{6}$/', "", $backupName) ?: $backupName;
+        self::assertValidWorldName($worldName);
+        self::assertWorldUnlocked($worldName);
+
+        $source = self::getBackupPath($backupName);
+        if (!is_dir($source)) {
+            throw new WorldNotFoundException("Backup '{$backupName}' does not exist.");
+        }
+
+        $worldManager = Server::getInstance()->getWorldManager();
+        if ($worldManager->isWorldLoaded($worldName)) {
+            $world = self::getWorldByNameNonNull($worldName);
+            $defaultWorld = self::getDefaultWorldNonNull();
+
+            foreach ($world->getPlayers() as $player) {
+                if ($defaultWorld !== $world) {
+                    $player->teleport($defaultWorld->getSpawnLocation());
+                }
+            }
+
+            if (!$worldManager->unloadWorld($world, true)) {
+                throw new WorldOperationException("Unable to unload world '{$worldName}' before restore.");
+            }
+        }
+
+        $destination = self::getWorldPath($worldName);
+        if (is_dir($destination)) {
+            self::deleteDirectory($destination);
+        }
+
+        $copiedFiles = self::copyDirectory($source, $destination);
+        CommandInterceptor::updateCommand("worlds", new WorldsCommand());
+
+        return $copiedFiles;
+    }
+
+    public static function isWorldLocked(string $name): bool {
+        self::assertValidWorldName($name);
+
+        $locks = self::readWorldLocks();
+        return ($locks[$name] ?? false) === true;
+    }
+
+    public static function setWorldLocked(string $name, bool $locked): void {
+        self::assertValidWorldName($name);
+
+        $locks = self::readWorldLocks();
+        if ($locked) {
+            $locks[$name] = true;
+        } else {
+            unset($locks[$name]);
+        }
+
+        self::writeWorldLocks($locks);
     }
 
     public static function lazyUnloadWorld(string $name, bool $force = false): bool {
@@ -151,7 +237,7 @@ final class WorldUtils {
         try {
             $loaded = $worldManager->loadWorld($name, true);
             if ($loaded) {
-                CommandInterceptor::updateCommand("worlds", new WorldCommand());
+                CommandInterceptor::updateCommand("worlds", new WorldsCommand());
             }
 
             return $loaded;
@@ -223,10 +309,78 @@ final class WorldUtils {
         return self::getWorldsPath() . DIRECTORY_SEPARATOR . $name;
     }
 
+    private static function getBackupsPath(): string {
+        return rtrim(ToolboxLoader::getLoader()->getDataFolder(), "\\/") . DIRECTORY_SEPARATOR . "world-backups";
+    }
+
+    private static function getBackupPath(string $name): string {
+        return self::getBackupsPath() . DIRECTORY_SEPARATOR . $name;
+    }
+
+    private static function getLocksPath(): string {
+        return rtrim(ToolboxLoader::getLoader()->getDataFolder(), "\\/") . DIRECTORY_SEPARATOR . "world-locks.json";
+    }
+
     private static function assertValidWorldName(string $name): void {
         if (trim($name) === "" || str_contains($name, "..") || str_contains($name, "/") || str_contains($name, "\\")) {
             throw new WorldOperationException("Invalid world name '{$name}'.");
         }
+    }
+
+    private static function assertValidBackupName(string $name): void {
+        if (trim($name) === "" || str_contains($name, "..") || str_contains($name, "/") || str_contains($name, "\\")) {
+            throw new WorldOperationException("Invalid backup name '{$name}'.");
+        }
+    }
+
+    private static function assertWorldUnlocked(string $name): void {
+        if (self::isWorldLocked($name)) {
+            throw new WorldOperationException("World '{$name}' is locked.");
+        }
+    }
+
+    /** @return array<string, bool> */
+    private static function readWorldLocks(): array {
+        $path = self::getLocksPath();
+        if (!is_file($path)) {
+            return [];
+        }
+
+        $data = json_decode((string) file_get_contents($path), true);
+        if (!is_array($data)) {
+            return [];
+        }
+
+        $locks = [];
+        foreach ($data as $name => $locked) {
+            if (is_string($name) && $locked === true) {
+                $locks[$name] = true;
+            }
+        }
+
+        return $locks;
+    }
+
+    /** @param array<string, bool> $locks */
+    private static function writeWorldLocks(array $locks): void {
+        $directory = dirname(self::getLocksPath());
+        if (!is_dir($directory) && !@mkdir($directory, 0777, true) && !is_dir($directory)) {
+            throw new WorldOperationException("Unable to create directory '{$directory}'.");
+        }
+
+        $json = json_encode($locks, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        if ($json === false || @file_put_contents(self::getLocksPath(), $json . PHP_EOL) === false) {
+            throw new WorldOperationException("Unable to write world locks.");
+        }
+    }
+
+    private static function deleteDirectory(string $directory): int {
+        $removedFiles = self::deleteDirectoryContents($directory);
+        if (!@rmdir($directory)) {
+            throw new WorldOperationException("Unable to remove directory '{$directory}'.");
+        }
+
+        return $removedFiles;
     }
 
     private static function deleteDirectoryContents(string $directory): int {

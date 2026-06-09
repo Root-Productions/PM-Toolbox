@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace valres\toolbox\command\default\world;
 
+use pocketmine\Server;
 use pocketmine\world\World;
 use pocketmine\world\WorldException;
 use valres\toolbox\command\argument\WorldArgument;
@@ -11,11 +12,10 @@ use valres\toolbox\command\attribute\CommandPermission;
 use valres\toolbox\command\CommandContext;
 use valres\toolbox\command\exception\CommandConfigurationException;
 use valres\toolbox\command\SubCommand;
-use valres\toolbox\utils\exception\WorldUtilsException;
 use valres\toolbox\utils\WorldUtils;
 
 #[CommandPermission(isOp: true)]
-final class WorldDeleteSubCommand extends SubCommand {
+final class WorldsDeleteSubCommand extends SubCommand {
     public function __construct() {
         parent::__construct("delete", "Delete a world");
     }
@@ -30,7 +30,7 @@ final class WorldDeleteSubCommand extends SubCommand {
         $name = $context->getArguments()->string("world");
 
         try {
-            $world = \pocketmine\Server::getInstance()->getWorldManager()->getWorldByName($name);
+            $world = Server::getInstance()->getWorldManager()->getWorldByName($name);
 
             if ($world instanceof World && WorldUtils::getDefaultWorldNonNull()->getId() === $world->getId()) {
                 throw new WorldException("Default world can't be deleted.");
@@ -39,7 +39,7 @@ final class WorldDeleteSubCommand extends SubCommand {
             WorldUtils::removeWorld($name);
 
             $sender->sendMessage("§aWorld {$name} has been deleted.");
-        } catch (WorldException|WorldUtilsException $e) {
+        } catch (WorldException $e) {
             $sender->sendMessage("§cWorld error: " . $e->getMessage());
         }
 

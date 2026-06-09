@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace valres\toolbox\utils\exception;
 
-use RuntimeException;
+use pocketmine\world\WorldException;
 
-class WorldUtilsException extends RuntimeException {
+class WorldUtilsException extends WorldException {
 }
