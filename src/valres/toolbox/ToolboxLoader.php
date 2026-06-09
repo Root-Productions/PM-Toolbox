@@ -10,6 +10,7 @@ use pocketmine\command\Command;
 use pocketmine\plugin\PluginBase;
 use valres\toolbox\command\CommandInterceptor;
 use valres\toolbox\command\default\world\WorldsCommand;
+use valres\toolbox\form\ddui\DduiManager;
 use valres\toolbox\manager\BaseManager;
 use valres\toolbox\manager\exception\ManagerException;
 use valres\toolbox\manager\ManagerHandler;
@@ -75,6 +76,7 @@ class ToolboxLoader {
         }
 
         self::registerCommand(new WorldsCommand());
+        DduiManager::init($loader);
 
         Packets::createInterceptor($loader, EventPriority::HIGHEST)
             ->registerOutgoing(new CommandInterceptor());

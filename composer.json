@@ -11,6 +11,7 @@
   "require": {
     "php": ">=8.1",
     "ext-sockets": "*",
-    "opis/closure": "^4.4"
+    "opis/closure": "^4.4",
+    "pocketmine/pocketmine-mp": "^5.43"
   }
 }
