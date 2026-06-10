@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Defines the maximum total weight allowed inside a storage item. */
 final class StorageWeightLimitComponent extends DataDrivenItemComponent {
     public function __construct(private readonly int $maxWeightLimit) {
     }

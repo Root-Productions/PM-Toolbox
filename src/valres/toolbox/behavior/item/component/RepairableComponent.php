@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Defines items and amounts that can repair this item. */
 final class RepairableComponent extends DataDrivenItemComponent {
     /** @param array<int, array{items: string[], repair_amount: string|int}> $repairItems */
     public function __construct(private readonly array $repairItems) {

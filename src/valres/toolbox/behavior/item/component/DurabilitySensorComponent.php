@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Triggers particles or sounds when durability thresholds are reached. */
 final class DurabilitySensorComponent extends DataDrivenItemComponent {
     /** @param array<int, array{durability: int, particle_type?: string, sound_event?: string}> $thresholds */
     public function __construct(private readonly array $thresholds) {

@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Defines the cooldown category and duration triggered by the item. */
 final class CooldownComponent extends DataDrivenItemComponent {
     public const TYPE_USE = "use";
     public const TYPE_ATTACK = "attack";

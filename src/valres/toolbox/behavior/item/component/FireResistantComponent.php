@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Determines whether dropped item stacks resist fire and lava. */
 final class FireResistantComponent extends DataDrivenItemComponent {
     public function __construct(private readonly bool $value = true) {
     }

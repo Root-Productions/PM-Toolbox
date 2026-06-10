@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Defines the maximum damage value for legacy damageable items. */
 final class MaxDamageComponent extends LegacyItemComponent {
     public function __construct(private readonly int $value) {
     }

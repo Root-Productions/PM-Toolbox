@@ -7,6 +7,7 @@ namespace valres\toolbox\behavior\item\component;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\exception\ItemRegistryException;
 
+/** Defines use duration, movement speed and vibration behavior while using the item. */
 final class UseModifiersComponent extends DataDrivenItemComponent {
     /** @throws ItemRegistryException */
     public function __construct(

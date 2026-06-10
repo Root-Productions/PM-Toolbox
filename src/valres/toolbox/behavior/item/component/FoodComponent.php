@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Allows the item to be eaten and defines nutrition behavior. */
 final class FoodComponent extends DataDrivenItemComponent {
     public function __construct(
         private readonly int $nutrition,

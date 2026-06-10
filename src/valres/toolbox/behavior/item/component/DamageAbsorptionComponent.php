@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Defines damage causes that can be absorbed by the item. */
 final class DamageAbsorptionComponent extends DataDrivenItemComponent {
     /** @param string[] $absorbableCauses */
     public function __construct(private readonly array $absorbableCauses = ["all"]) {

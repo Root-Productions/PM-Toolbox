@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Allows the item to be worn in an equipment slot. */
 final class WearableItemComponent extends DataDrivenItemComponent {
     const ARMOR_CHEST = "slot.armor.chest";
     const ARMOR_FEET = "slot.armor.feet";

@@ -13,6 +13,7 @@ use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\nbt\tag\Tag;
 
+/** Converts component scalar and array values into NBT tags. */
 final class ComponentNbtHelper {
     public static function compound(array $values): CompoundTag {
         $tag = CompoundTag::create();

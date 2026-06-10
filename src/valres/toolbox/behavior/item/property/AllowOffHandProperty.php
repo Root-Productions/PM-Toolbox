@@ -2,17 +2,18 @@
 
 declare(strict_types=1);
 
-namespace valres\toolbox\behavior\item\component;
+namespace valres\toolbox\behavior\item\property;
 
 use pocketmine\nbt\tag\Tag;
+use valres\toolbox\behavior\item\component\ComponentNbtHelper;
 
-/** Applies the legacy foil visual effect to the item. */
-final class FoilComponent extends LegacyItemComponent {
+/** Determines whether the item can be equipped in the off-hand slot. */
+final class AllowOffHandProperty extends DataDrivenItemProperty {
     public function __construct(private readonly bool $value = true) {
     }
 
     public static function identifier(): string {
-        return "minecraft:foil";
+        return "minecraft:allow_off_hand";
     }
 
     public function toNBT(): Tag {

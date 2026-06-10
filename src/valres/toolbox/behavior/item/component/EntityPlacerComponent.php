@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Allows the item to place an entity into the world. */
 final class EntityPlacerComponent extends DataDrivenItemComponent {
     public function __construct(
         private readonly string $entity,

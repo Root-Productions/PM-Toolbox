@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Defines damage, dismount and knockback behavior while the item is used. */
 final class KineticWeaponComponent extends DataDrivenItemComponent {
     public function __construct(
         private readonly ?float $chargeDelay = null,

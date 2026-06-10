@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Allows the item to shoot projectile ammunition. */
 final class ShooterComponent extends DataDrivenItemComponent {
     public function __construct(
         private readonly array $ammunition,

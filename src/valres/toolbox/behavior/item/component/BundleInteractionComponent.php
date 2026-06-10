@@ -7,6 +7,7 @@ namespace valres\toolbox\behavior\item\component;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\exception\ItemRegistryException;
 
+/** Enables bundle tooltip behavior and controls viewable slots. */
 final class BundleInteractionComponent extends DataDrivenItemComponent {
     /** @throws ItemRegistryException */
     public function __construct(

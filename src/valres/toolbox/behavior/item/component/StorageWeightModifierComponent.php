@@ -7,6 +7,7 @@ namespace valres\toolbox\behavior\item\component;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\exception\ItemRegistryException;
 
+/** Defines the extra weight this item adds inside storage items. */
 final class StorageWeightModifierComponent extends DataDrivenItemComponent {
     /** @throws ItemRegistryException */
     public function __construct(private readonly int $weightInStorageItem) {

@@ -7,6 +7,7 @@ namespace valres\toolbox\behavior\item\component;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\exception\ItemRegistryException;
 
+/** Allows the item to take damage before breaking. */
 final class DurabilityComponent extends DataDrivenItemComponent {
     /** @throws ItemRegistryException */
     public function __construct(

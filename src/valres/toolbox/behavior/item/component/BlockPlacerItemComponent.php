@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Allows the item to place a block when used. */
 final class BlockPlacerItemComponent extends DataDrivenItemComponent {
     public function __construct(
         private readonly string $block,

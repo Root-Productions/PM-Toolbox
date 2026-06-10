@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Defines block destroy speeds and efficiency usage for tool-like items. */
 final class DiggerComponent extends DataDrivenItemComponent {
     /** @param array<int, array{block: string|array, speed: int}> $destroySpeeds */
     public function __construct(

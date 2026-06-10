@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Allows the item to be dyed and optionally defines its default color. */
 final class DyeableComponent extends DataDrivenItemComponent {
     public function __construct(private readonly ?string $defaultColor = null) {
     }

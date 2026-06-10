@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Allows the item to be used as furnace fuel for a duration. */
 final class FuelComponent extends DataDrivenItemComponent {
     public function __construct(private readonly float $duration) {
     }

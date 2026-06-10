@@ -8,6 +8,7 @@ use pocketmine\block\Block;
 use pocketmine\nbt\tag\Tag;
 use pocketmine\world\format\io\GlobalBlockStateHandlers;
 
+/** Defines the block render identifier used by legacy block items. */
 final class BlockRenderComponent extends LegacyItemComponent {
     public function __construct(private readonly string $name) {
     }

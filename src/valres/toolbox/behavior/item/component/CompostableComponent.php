@@ -7,6 +7,7 @@ namespace valres\toolbox\behavior\item\component;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\exception\ItemRegistryException;
 
+/** Allows the item to be used in composters with a chance value. */
 class CompostableComponent extends DataDrivenItemComponent {
     /** @throws ItemRegistryException */
     public function __construct(

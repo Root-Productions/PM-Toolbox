@@ -7,6 +7,7 @@ namespace valres\toolbox\behavior\item\component;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\exception\ItemRegistryException;
 
+/** Allows the item to receive enchantments for a specific slot type. */
 final class EnchantableComponent extends DataDrivenItemComponent {
     /** @throws ItemRegistryException */
     public function __construct(

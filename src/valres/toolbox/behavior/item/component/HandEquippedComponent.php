@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Makes the item render like a hand-held tool in legacy format. */
 final class HandEquippedComponent extends LegacyItemComponent {
     public function __construct(private readonly bool $value = true) {
     }
