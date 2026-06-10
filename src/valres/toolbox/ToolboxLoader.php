@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use pocketmine\event\EventPriority;
 use pocketmine\command\Command;
 use pocketmine\plugin\PluginBase;
+use valres\toolbox\behavior\BehaviorInterceptor;
 use valres\toolbox\command\CommandInterceptor;
 use valres\toolbox\command\default\world\WorldsCommand;
 use valres\toolbox\discord\DiscordLogHandler;
@@ -85,6 +86,7 @@ class ToolboxLoader {
 
         Packets::createInterceptor($loader, EventPriority::HIGHEST)
             ->registerOutgoing(new CommandInterceptor())
+            ->registerAnnotated(new BehaviorInterceptor())
             ->registerAnnotated(new FormResponseGuard());
     }
 
