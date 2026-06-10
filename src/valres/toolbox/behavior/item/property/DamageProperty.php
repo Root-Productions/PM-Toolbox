@@ -18,7 +18,7 @@ final class DamageProperty extends DataDrivenItemProperty {
     }
 
     public static function identifier(): string {
-        return "minecraft:damage";
+        return "damage";
     }
 
     public function toNBT(): Tag {
