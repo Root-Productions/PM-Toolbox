@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace valres\toolbox\behavior\item\builder;
 
+use pocketmine\data\bedrock\ItemTagToIdMap;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
+use pocketmine\world\format\io\GlobalItemDataHandlers;
 use valres\toolbox\behavior\item\component\DataDrivenItemComponent;
+use valres\toolbox\behavior\item\component\TagsComponent;
 use valres\toolbox\behavior\item\ItemFormatEnum;
 use valres\toolbox\behavior\item\property\DataDrivenItemProperty;
 
@@ -68,6 +71,15 @@ class DataDrivenItemBuilder extends ItemBuilder {
 
         foreach ($this->getComponents() as $id => $component) {
             $components->setTag($id, $component->toNBT());
+            if (!$component instanceof TagsComponent) {
+                continue;
+            }
+
+            $item = $this->getItem();
+            $typeName = GlobalItemDataHandlers::getSerializer()->serializeType($item)->getName();
+            foreach ($component->getTags() as $tag) {
+                ItemTagToIdMap::getInstance()->addIdToTag($tag, $typeName);
+            }
         }
 
         $components->setTag(static::TAG_ITEM_PROPERTIES, $properties);

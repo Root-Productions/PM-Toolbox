@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace valres\toolbox\behavior\item\property;
 
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\StringTag;
+use valres\toolbox\behavior\item\component\ComponentNbtHelper;
 
 /** Defines the texture or texture set used for the item's UI icon. */
 final class IconProperty extends DataDrivenItemProperty {
@@ -17,12 +17,11 @@ final class IconProperty extends DataDrivenItemProperty {
     }
 
     public function toNBT(): CompoundTag {
-        return CompoundTag::create()
-            ->setTag("texture", new StringTag($this->icon))
-            ->setTag(
-                "textures",
-                CompoundTag::create()
-                    ->setTag("default", new StringTag($this->icon))
-            );
+        return ComponentNbtHelper::compound([
+            "texture" => $this->icon,
+            "textures" => [
+                "default" => $this->icon
+            ]
+        ]);
     }
 }
