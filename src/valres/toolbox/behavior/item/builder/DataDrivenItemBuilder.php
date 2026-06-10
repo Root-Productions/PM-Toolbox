@@ -7,15 +7,15 @@ namespace valres\toolbox\behavior\item\builder;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
-use valres\toolbox\behavior\item\component\ItemComponent;
+use valres\toolbox\behavior\item\component\DataDrivenItemComponent;
 use valres\toolbox\behavior\item\ItemFormatEnum;
-use valres\toolbox\behavior\item\property\ItemProperty;
+use valres\toolbox\behavior\item\property\DataDrivenItemProperty;
 
 class DataDrivenItemBuilder extends ItemBuilder {
-    /** @var array<string, ItemComponent> */
+    /** @var array<string, DataDrivenItemComponent> */
     private array $components = [];
 
-    /** @var array<string, ItemProperty> */
+    /** @var array<string, DataDrivenItemProperty> */
     private array $properties = [];
 
     public static function getFormat(): ItemFormatEnum {
@@ -26,7 +26,7 @@ class DataDrivenItemBuilder extends ItemBuilder {
         return $this->components;
     }
 
-    public function addComponent(ItemComponent $component): self {
+    public function addComponent(DataDrivenItemComponent $component): self {
         $this->components[$component::identifier()] = $component;
         return $this;
     }
@@ -44,7 +44,7 @@ class DataDrivenItemBuilder extends ItemBuilder {
         return $this->properties;
     }
 
-    public function addProperty(ItemProperty $property): self {
+    public function addProperty(DataDrivenItemProperty $property): self {
         $this->properties[$property::identifier()] = $property;
         return $this;
     }

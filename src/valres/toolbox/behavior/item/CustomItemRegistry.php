@@ -54,6 +54,7 @@ final class CustomItemRegistry {
             ->setRuntimeId($runtimeId)
             ->setTypeId($item->getTypeId());
 
+        $this->applyItemComponents($itemBuilder);
         $this->deepRegister($itemBuilder);
     }
 
@@ -68,7 +69,37 @@ final class CustomItemRegistry {
             ->setRuntimeId($runtimeId)
             ->setTypeId($item->getTypeId());
 
+        $this->applyItemComponents($itemBuilder);
         $this->deepRegister($itemBuilder);
+    }
+
+    /** @throws ItemRegistryException */
+    private function applyItemComponents(ItemBuilder $builder): void {
+        $item = $builder->getItem();
+
+        ItemDataResolver::applyDefault($builder);
+
+        if ($builder instanceof DataDrivenItemBuilder) {
+            if ($item instanceof LegacyExtraComponentsInterface) {
+                throw new ItemRegistryException("Data-Driven item '" . $item::class . "' cannot define legacy components.");
+            }
+
+            if ($item instanceof DataDrivenExtraComponentsInterface) {
+                $item->defineDataDrivenComponents($builder);
+            }
+
+            return;
+        }
+
+        if ($builder instanceof LegacyItemBuilder) {
+            if ($item instanceof DataDrivenExtraComponentsInterface) {
+                throw new ItemRegistryException("Legacy item '" . $item::class . "' cannot define Data-Driven components.");
+            }
+
+            if ($item instanceof LegacyExtraComponentsInterface) {
+                $item->defineLegacyComponents($builder);
+            }
+        }
     }
 
     public function deepRegister(ItemBuilder $builder): void {

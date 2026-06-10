@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace valres\toolbox\behavior\item\builder;
 
 use pocketmine\nbt\tag\CompoundTag;
-use valres\toolbox\behavior\item\component\ItemComponent;
+use valres\toolbox\behavior\item\component\LegacyItemComponent;
 use valres\toolbox\behavior\item\ItemFormatEnum;
 
 class LegacyItemBuilder extends ItemBuilder {
-    /** @var array<string, ItemComponent> */
+    /** @var array<string, LegacyItemComponent> */
     private array $components = [];
 
     public static function getFormat(): ItemFormatEnum {
@@ -20,7 +20,7 @@ class LegacyItemBuilder extends ItemBuilder {
         return $this->components;
     }
 
-    public function addComponent(ItemComponent $component): self {
+    public function addComponent(LegacyItemComponent $component): self {
         $this->components[$component::identifier()] = $component;
         return $this;
     }
