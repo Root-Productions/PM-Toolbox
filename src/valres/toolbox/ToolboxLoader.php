@@ -10,6 +10,7 @@ use pocketmine\command\Command;
 use pocketmine\plugin\PluginBase;
 use valres\toolbox\command\CommandInterceptor;
 use valres\toolbox\command\default\world\WorldsCommand;
+use valres\toolbox\discord\DiscordLogHandler;
 use valres\toolbox\form\ddui\DduiManager;
 use valres\toolbox\form\FormResponseGuard;
 use valres\toolbox\manager\BaseManager;
@@ -76,6 +77,10 @@ class ToolboxLoader {
             self::startRCON($rconSettings);
         }
 
+        if (!DiscordLogHandler::isRegistered()) {
+            DiscordLogHandler::register($loader);
+        }
+
         self::registerCommand(new WorldsCommand());
 
         Packets::createInterceptor($loader, EventPriority::HIGHEST)
@@ -129,6 +134,10 @@ class ToolboxLoader {
     public static function disable(bool $disableManagers = true): void {
         if ($disableManagers) {
             self::disableManagers();
+        }
+
+        if (DiscordLogHandler::isRegistered()) {
+            DiscordLogHandler::unregister();
         }
 
         self::$enabled = false;

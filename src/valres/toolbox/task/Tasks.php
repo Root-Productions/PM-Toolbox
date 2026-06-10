@@ -19,7 +19,7 @@ final class Tasks {
 
     public static function every(Closure $callback, int $intervalTicks): TaskHandle {
         $handle = new TaskHandle();
-        ToolBoxLoader::getLoader()->getScheduler()->scheduleRepeatingTask(new EveryTask($handle, $callback), max(1, $intervalTicks));
+        ToolboxLoader::getLoader()->getScheduler()->scheduleRepeatingTask(new EveryTask($handle, $callback), max(1, $intervalTicks));
         return $handle;
     }
 
@@ -30,7 +30,7 @@ final class Tasks {
             return $handle;
         }
 
-        ToolBoxLoader::getLoader()->getScheduler()->scheduleRepeatingTask(new RepeatTask($handle, $times, $callback), max(1, $intervalTicks));
+        ToolboxLoader::getLoader()->getScheduler()->scheduleRepeatingTask(new RepeatTask($handle, $times, $callback), max(1, $intervalTicks));
         return $handle;
     }
 }
