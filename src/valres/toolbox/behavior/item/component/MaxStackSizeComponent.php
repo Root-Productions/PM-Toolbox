@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace valres\toolbox\behavior\item\component;
 
-use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\exception\ItemRegistryException;
 
@@ -21,6 +20,6 @@ final class MaxStackSizeComponent extends LegacyItemComponent {
     }
 
     public function toNBT(): Tag {
-        return new IntTag($this->value);
+        return ComponentNbtHelper::tag($this->value);
     }
 }

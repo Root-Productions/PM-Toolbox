@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\block\Block;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\nbt\tag\Tag;
 use pocketmine\world\format\io\GlobalBlockStateHandlers;
 
@@ -22,6 +21,6 @@ final class BlockRenderComponent extends LegacyItemComponent {
     }
 
     public function toNBT(): Tag {
-        return new StringTag($this->name);
+        return ComponentNbtHelper::tag($this->name);
     }
 }

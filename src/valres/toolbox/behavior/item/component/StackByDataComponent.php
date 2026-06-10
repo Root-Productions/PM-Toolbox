@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace valres\toolbox\behavior\item\component;
 
-use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\Tag;
 
 final class StackByDataComponent extends LegacyItemComponent {
@@ -16,6 +15,6 @@ final class StackByDataComponent extends LegacyItemComponent {
     }
 
     public function toNBT(): Tag {
-        return new ByteTag($this->value ? 1 : 0);
+        return ComponentNbtHelper::tag($this->value);
     }
 }
