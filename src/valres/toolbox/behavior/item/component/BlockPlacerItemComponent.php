@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace valres\toolbox\behavior\item\component;
 
+use pocketmine\block\Block;
 use pocketmine\nbt\tag\Tag;
+use pocketmine\world\format\io\GlobalBlockStateHandlers;
 
 /** Allows the item to place a block when used. */
 final class BlockPlacerItemComponent extends DataDrivenItemComponent {
@@ -14,6 +16,16 @@ final class BlockPlacerItemComponent extends DataDrivenItemComponent {
         private readonly ?bool $alignedPlacement = null,
         private readonly ?array $useOn = null
     ) {
+    }
+
+    public static function from(Block $block, Block ...$useOn): self {
+        return new self(
+            GlobalBlockStateHandlers::getSerializer()->serialize($block->getStateId())->getName(),
+            useOn: array_map(
+                static fn(Block $target): string => GlobalBlockStateHandlers::getSerializer()->serialize($target->getStateId())->getName(),
+                $useOn
+            )
+        );
     }
 
     public static function identifier(): string {

@@ -13,7 +13,7 @@ final class DamageProperty extends DataDrivenItemProperty {
     /** @throws ItemRegistryException */
     public function __construct(private readonly int $value) {
         if ($this->value < 0 || $this->value > 32767) {
-            throw new ItemRegistryException("Property 'minecraft:damage' must be between 0 and 32767, got " . $this->value);
+            throw new ItemRegistryException("Property 'damage' must be between 0 and 32767, got " . $this->value);
         }
     }
 

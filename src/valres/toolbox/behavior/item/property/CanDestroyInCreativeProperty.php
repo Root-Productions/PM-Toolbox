@@ -13,7 +13,7 @@ final class CanDestroyInCreativeProperty extends DataDrivenItemProperty {
     }
 
     public static function identifier(): string {
-        return "minecraft:can_destroy_in_creative";
+        return "can_destroy_in_creative";
     }
 
     public function toNBT(): Tag {

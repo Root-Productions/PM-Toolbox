@@ -13,7 +13,7 @@ final class ShouldDespawnProperty extends DataDrivenItemProperty {
     }
 
     public static function identifier(): string {
-        return "minecraft:should_despawn";
+        return "should_despawn";
     }
 
     public function toNBT(): Tag {

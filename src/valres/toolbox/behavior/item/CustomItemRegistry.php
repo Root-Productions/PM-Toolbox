@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\item;
 
 use Closure;
 use pocketmine\data\bedrock\item\SavedItemData;
+use pocketmine\data\bedrock\item\upgrade\LegacyItemIdToStringIdMap;
 use pocketmine\item\Item;
 use pocketmine\item\StringToItemParser;
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
@@ -121,11 +122,13 @@ final class CustomItemRegistry {
         ));
 
         $identifier = $builder->getRuntimeId();
+        $legacyIdentifier = $identifier;
         if (str_contains($identifier, ":")) {
-            [$prefix, $id] = explode(":", $identifier, 2);
-            StringToItemParser::getInstance()->register($id, fn () => clone $item);
+            [, $legacyIdentifier] = explode(":", $identifier, 2);
+            StringToItemParser::getInstance()->register($legacyIdentifier, fn () => clone $item);
         }
         StringToItemParser::getInstance()->register($identifier, fn () => clone $item);
+        LegacyItemIdToStringIdMap::getInstance()->add($legacyIdentifier, $item->getTypeId());
 
         $this->items[$runtimeId] = $builder;
     }

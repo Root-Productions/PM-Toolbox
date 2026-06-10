@@ -18,7 +18,7 @@ final class RarityProperty extends DataDrivenItemProperty {
     }
 
     public static function identifier(): string {
-        return "minecraft:rarity";
+        return "rarity";
     }
 
     public function toNBT(): Tag {

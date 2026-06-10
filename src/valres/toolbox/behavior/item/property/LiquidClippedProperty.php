@@ -13,7 +13,7 @@ final class LiquidClippedProperty extends DataDrivenItemProperty {
     }
 
     public static function identifier(): string {
-        return "minecraft:liquid_clipped";
+        return "liquid_clipped";
     }
 
     public function toNBT(): Tag {

@@ -13,7 +13,7 @@ final class MiningSpeedProperty extends DataDrivenItemProperty {
     }
 
     public static function identifier(): string {
-        return "minecraft:mining_speed";
+        return "mining_speed";
     }
 
     public function toNBT(): Tag {

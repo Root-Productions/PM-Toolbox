@@ -13,7 +13,7 @@ final class HoverTextColorProperty extends DataDrivenItemProperty {
     }
 
     public static function identifier(): string {
-        return "minecraft:hover_text_color";
+        return "hover_text_color";
     }
 
     public function toNBT(): Tag {

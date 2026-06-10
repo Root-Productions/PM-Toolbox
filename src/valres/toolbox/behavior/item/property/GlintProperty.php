@@ -13,7 +13,7 @@ final class GlintProperty extends DataDrivenItemProperty {
     }
 
     public static function identifier(): string {
-        return "minecraft:glint";
+        return "glint";
     }
 
     public function toNBT(): Tag {

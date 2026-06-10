@@ -24,7 +24,7 @@ final class UseAnimationProperty extends DataDrivenItemProperty {
     }
 
     public static function identifier(): string {
-        return "minecraft:use_animation";
+        return "use_animation";
     }
 
     public function toNBT(): Tag {

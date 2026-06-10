@@ -13,7 +13,7 @@ final class UseDurationProperty extends DataDrivenItemProperty {
     }
 
     public static function identifier(): string {
-        return "minecraft:use_duration";
+        return "use_duration";
     }
 
     public function toNBT(): Tag {

@@ -13,12 +13,12 @@ final class MaxStackSizeProperty extends DataDrivenItemProperty {
     /** @throws ItemRegistryException */
     public function __construct(private readonly int $value) {
         if ($this->value < 1 || $this->value > 64) {
-            throw new ItemRegistryException("Property 'minecraft:max_stack_size' must be between 1 and 64, got " . $this->value);
+            throw new ItemRegistryException("Property 'max_stack_size' must be between 1 and 64, got " . $this->value);
         }
     }
 
     public static function identifier(): string {
-        return "minecraft:max_stack_size";
+        return "max_stack_size";
     }
 
     public function toNBT(): Tag {

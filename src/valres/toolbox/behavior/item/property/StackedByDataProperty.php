@@ -13,7 +13,7 @@ final class StackedByDataProperty extends DataDrivenItemProperty {
     }
 
     public static function identifier(): string {
-        return "minecraft:stacked_by_data";
+        return "stacked_by_data";
     }
 
     public function toNBT(): Tag {

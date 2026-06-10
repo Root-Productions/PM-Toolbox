@@ -13,7 +13,7 @@ final class AllowOffHandProperty extends DataDrivenItemProperty {
     }
 
     public static function identifier(): string {
-        return "minecraft:allow_off_hand";
+        return "allow_off_hand";
     }
 
     public function toNBT(): Tag {

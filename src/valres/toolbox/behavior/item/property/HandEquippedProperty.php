@@ -13,7 +13,7 @@ final class HandEquippedProperty extends DataDrivenItemProperty {
     }
 
     public static function identifier(): string {
-        return "minecraft:hand_equipped";
+        return "hand_equipped";
     }
 
     public function toNBT(): Tag {

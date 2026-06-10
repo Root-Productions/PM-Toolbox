@@ -13,7 +13,7 @@ final class FoilProperty extends DataDrivenItemProperty {
     }
 
     public static function identifier(): string {
-        return "minecraft:foil";
+        return "foil";
     }
 
     public function toNBT(): Tag {

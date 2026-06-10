@@ -13,7 +13,7 @@ final class InteractButtonProperty extends DataDrivenItemProperty {
     }
 
     public static function identifier(): string {
-        return "minecraft:interact_button";
+        return "interact_button";
     }
 
     public function toNBT(): Tag {
