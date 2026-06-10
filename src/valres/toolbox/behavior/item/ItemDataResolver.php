@@ -22,6 +22,7 @@ use pocketmine\item\Shears;
 use pocketmine\item\Shovel;
 use pocketmine\item\Sword;
 use pocketmine\item\Tool;
+use valres\toolbox\behavior\exception\ItemRegistryException;
 use valres\toolbox\behavior\item\builder\DataDrivenItemBuilder;
 use valres\toolbox\behavior\item\builder\ItemBuilder;
 use valres\toolbox\behavior\item\component\BlockPlacerItemComponent;
@@ -47,6 +48,16 @@ use valres\toolbox\behavior\item\property\UseAnimationProperty;
 use valres\toolbox\behavior\item\property\UseDurationProperty;
 
 class ItemDataResolver {
+    /**
+     * Applies auto-detected default components and properties to supported builders.
+     *
+     * @internal Called by CustomItemRegistry before user-defined extra components.
+     *
+     * @param  ItemBuilder $builder
+     *
+     * @throws ItemRegistryException
+     * @return void
+     */
     public static function applyDefault(ItemBuilder $builder): void {
         if (!$builder instanceof DataDrivenItemBuilder) {
             return;
@@ -56,6 +67,9 @@ class ItemDataResolver {
         self::applyDataDrivenComponents($builder);
     }
 
+    /**
+     * @throws ItemRegistryException
+     */
     private static function applyDataDrivenProperties(DataDrivenItemBuilder $builder): void {
         $item = $builder->getItem();
         $icon = self::runtimePath($builder->getRuntimeId());
@@ -90,6 +104,9 @@ class ItemDataResolver {
         $builder->addProperty(new UseAnimationProperty(self::detectUseAnimation($item)));
     }
 
+    /**
+     * @throws ItemRegistryException
+     */
     private static function applyDataDrivenComponents(DataDrivenItemBuilder $builder): void {
         $item = $builder->getItem();
 

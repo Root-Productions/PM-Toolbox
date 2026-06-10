@@ -15,7 +15,12 @@ final class PacketCallbackRegistry {
     private array $outgoingHandlers = [];
 
     /**
-     * @param class-string<Packet>[] $packetClasses
+     * Registers callbacks executed for incoming packets matching any provided class.
+     *
+     * @param  class-string<Packet>[] $packetClasses
+     * @param  callable               $handler
+     *
+     * @return void
      */
     public function registerIncoming(array $packetClasses, callable $handler): void {
         foreach ($packetClasses as $packetClass) {
@@ -24,7 +29,12 @@ final class PacketCallbackRegistry {
     }
 
     /**
-     * @param class-string<Packet>[] $packetClasses
+     * Registers callbacks executed for outgoing packets matching any provided class.
+     *
+     * @param  class-string<Packet>[] $packetClasses
+     * @param  callable               $handler
+     *
+     * @return void
      */
     public function registerOutgoing(array $packetClasses, callable $handler): void {
         foreach ($packetClasses as $packetClass) {
@@ -32,16 +42,41 @@ final class PacketCallbackRegistry {
         }
     }
 
+    /**
+     * Dispatches an incoming packet and returns false when a cancellable handler rejects it.
+     *
+     * @param  Packet         $packet
+     * @param  NetworkSession $session
+     * @param  bool           $cancellable
+     *
+     * @return bool
+     */
     public function dispatchIncoming(Packet $packet, NetworkSession $session, bool $cancellable): bool {
         return $this->dispatch($this->incomingHandlers, $packet, $session, $cancellable);
     }
 
+    /**
+     * Dispatches an outgoing packet and returns false when a cancellable handler rejects it.
+     *
+     * @param  Packet         $packet
+     * @param  NetworkSession $session
+     * @param  bool           $cancellable
+     *
+     * @return bool
+     */
     public function dispatchOutgoing(Packet $packet, NetworkSession $session, bool $cancellable): bool {
         return $this->dispatch($this->outgoingHandlers, $packet, $session, $cancellable);
     }
 
     /**
-     * @param array<class-string<Packet>, callable[]> $handlers
+     * Dispatches a packet through matching handlers.
+     *
+     * @param  array<class-string<Packet>, callable[]> $handlers
+     * @param  Packet                                  $packet
+     * @param  NetworkSession                          $session
+     * @param  bool                                    $cancellable
+     *
+     * @return bool
      */
     private function dispatch(array $handlers, Packet $packet, NetworkSession $session, bool $cancellable): bool {
         foreach ($handlers as $packetClass => $packetHandlers) {

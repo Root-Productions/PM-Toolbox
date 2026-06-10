@@ -24,7 +24,13 @@ final class ItemTypeDictionaryMapper {
 
     private array $items = [];
 
-    /** @throws ReflectionException */
+    /**
+     * Caches reflection handles for PocketMine's item type dictionary internals.
+     *
+     * @internal This class mutates PocketMine network dictionary internals.
+     *
+     * @throws ReflectionException
+     */
     public function __construct() {
         $dictionary = TypeConverter::getInstance()->getItemTypeDictionary();
         $this->dictionaryReflection = new ReflectionClass($dictionary);
@@ -34,10 +40,26 @@ final class ItemTypeDictionaryMapper {
         $this->itemTypesProperty = $this->dictionaryReflection->getProperty("itemTypes");
     }
 
+    /**
+     * Returns entries registered through the toolbox mapper.
+     *
+     * @return array<string, array{builder: ItemBuilder, entry: ItemTypeEntry}>
+     */
     public function getItems(): array {
         return $this->items;
     }
 
+    /**
+     * Adds a custom item entry to PocketMine's runtime item dictionary.
+     *
+     * @internal Prefer CustomItemRegistry for normal item registration.
+     *
+     * @param  ItemBuilder   $builder
+     * @param  ItemTypeEntry $entry
+     *
+     * @throws InvalidArgumentException|RuntimeException
+     * @return void
+     */
     public function map(ItemBuilder $builder, ItemTypeEntry $entry): void {
         $this->validateEntry($entry);
 
@@ -50,6 +72,14 @@ final class ItemTypeDictionaryMapper {
         ];
     }
 
+    /**
+     * Validates the numeric and string ids before dictionary mutation.
+     *
+     * @param  ItemTypeEntry $itemTypeEntry
+     *
+     * @throws InvalidArgumentException
+     * @return void
+     */
     private static function validateEntry(ItemTypeEntry $itemTypeEntry): void {
         $numericId = $itemTypeEntry->getNumericId();
         $stringId = $itemTypeEntry->getStringId();
@@ -63,6 +93,17 @@ final class ItemTypeDictionaryMapper {
         }
     }
 
+    /**
+     * Mutates PocketMine's private item type maps using cached reflection properties.
+     *
+     * @internal Reflection bridge for TypeConverter item dictionary internals.
+     *
+     * @param  object        $dictionary
+     * @param  ItemTypeEntry $itemTypeEntry
+     *
+     * @throws RuntimeException
+     * @return void
+     */
     private function updateMappings($dictionary, ItemTypeEntry $itemTypeEntry): void {
         $numericId = $itemTypeEntry->getNumericId();
         $stringId  = $itemTypeEntry->getStringId();

@@ -32,6 +32,13 @@ abstract class SubCommand {
 
     private ?string $permission = null;
 
+    /**
+     * Creates a sub-command definition.
+     *
+     * @param  string   $name
+     * @param  string   $description
+     * @param  string[] $aliases
+     */
     public function __construct(
         private readonly string $name,
         private readonly string $description = "",
@@ -41,6 +48,11 @@ abstract class SubCommand {
         $this->configure();
     }
 
+    /**
+     * Configures arguments, rules and nested sub-commands.
+     *
+     * @return void
+     */
     protected function configure(): void {
     }
 
@@ -52,10 +64,23 @@ abstract class SubCommand {
         return $this->description;
     }
 
+    /**
+     * Returns aliases accepted for this sub-command.
+     *
+     * @return string[]
+     */
     public function getAliases(): array {
         return $this->aliases;
     }
 
+    /**
+     * Adds a nested sub-command and rejects duplicate names or aliases.
+     *
+     * @param  SubCommand $subCommand
+     *
+     * @throws CommandConfigurationException
+     * @return $this
+     */
     public function addSubCommand(SubCommand $subCommand): self {
         foreach ([$subCommand->getName(), ...$subCommand->getAliases()] as $name) {
             if ($this->getSubCommand($name) !== null) {
@@ -70,6 +95,13 @@ abstract class SubCommand {
         return $this;
     }
 
+    /**
+     * Finds a nested sub-command by name or alias.
+     *
+     * @param  string $name
+     *
+     * @return SubCommand|null
+     */
     public function getSubCommand(string $name): ?SubCommand {
         foreach ($this->subCommands as $subCommand) {
             if ($subCommand->matches($name)) {
@@ -80,15 +112,37 @@ abstract class SubCommand {
         return null;
     }
 
+    /**
+     * Returns nested sub-commands registered on this sub-command.
+     *
+     * @return SubCommand[]
+     */
     public function getSubCommands(): array {
         return $this->subCommands;
     }
 
+    /**
+     * Checks whether a raw command token matches the name or any alias.
+     *
+     * @param  string $name
+     *
+     * @return bool
+     */
     public function matches(string $name): bool {
         $name = strtolower($name);
         return strtolower($this->name) === $name || in_array($name, $this->aliases, true);
     }
 
+    /**
+     * Validates, parses and executes this sub-command.
+     *
+     * @param  Command       $command
+     * @param  CommandSender $sender
+     * @param  string        $label
+     * @param  string[]      $rawArgs
+     *
+     * @return CommandFailure|CommandSuccess
+     */
     public function tryRun(Command $command, CommandSender $sender, string $label, array $rawArgs): CommandFailure|CommandSuccess {
         $ruleResult = $this->testRules($sender);
         if (!$ruleResult->isSuccess()) {
@@ -127,9 +181,23 @@ abstract class SubCommand {
         return new CommandSuccess($sender, $arguments, $label, $returnValue);
     }
 
+    /**
+     * Runs the sub-command after rules and argument validation have passed.
+     *
+     * @param  CommandContext $context
+     *
+     * @return mixed
+     */
     abstract protected function onRun(CommandContext $context): mixed;
 
-    /** @param string[] $parents */
+    /**
+     * Binds this sub-command to its root command and resolves inherited permission paths.
+     *
+     * @param  Command  $command
+     * @param  string[] $parents
+     *
+     * @return void
+     */
     public function bindTo(Command $command, array $parents = []): void {
         $this->command = $command;
         $this->permissionParents = $parents;
@@ -146,11 +214,22 @@ abstract class SubCommand {
         }
     }
 
+    /**
+     * Returns the permission node registered for this sub-command.
+     *
+     * @return string|null
+     */
     public function getPermission(): ?string {
         return $this->permission;
     }
 
-    /** @return string[] */
+    /**
+     * Builds usage lines for this sub-command and its nested children.
+     *
+     * @param  string $parentLabel
+     *
+     * @return string[]
+     */
     public function getUsageLines(string $parentLabel): array {
         $label = $parentLabel . " " . $this->name;
         $lines = [$this->getUsageLine($label)];
@@ -162,7 +241,14 @@ abstract class SubCommand {
         return array_values(array_unique($lines));
     }
 
-    /** @param string[] $parents */
+    /**
+     * Resolves the permission node from attributes or the command hierarchy.
+     *
+     * @param  Command  $command
+     * @param  string[] $parents
+     *
+     * @return array{0: string, 1: bool}
+     */
     private function resolvePermission(Command $command, array $parents): array {
         $permission = implode(".", [
             strtolower($this->name),

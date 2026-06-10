@@ -40,7 +40,15 @@ abstract class Command extends PMCommand implements PluginOwned {
 
     protected ArgumentsList $argumentsList;
 
-    /** @throws CommandConfigurationException */
+    /**
+     * Builds a command and loads its attribute-based metadata, permission and arguments.
+     *
+     * @param  string|null $name
+     * @param  string|null $description
+     * @param  string[]    $aliases
+     *
+     * @throws CommandConfigurationException
+     */
     public function __construct(?string $name = null, ?string $description = null, array $aliases = []) {
         [$name, $description, $aliases] = $this->resolveMetadata($name, $description, $aliases);
 
@@ -53,6 +61,11 @@ abstract class Command extends PMCommand implements PluginOwned {
         $this->setUsage(implode("\n", $this->getUsageLines()));
     }
 
+    /**
+     * Configures arguments, rules and sub-commands after metadata has been loaded.
+     *
+     * @return void
+     */
     protected function configure(): void {
     }
 
@@ -60,7 +73,14 @@ abstract class Command extends PMCommand implements PluginOwned {
         return $this->plugin;
     }
 
-    /** @throws CommandConfigurationException */
+    /**
+     * Adds a sub-command and rejects duplicate names or aliases.
+     *
+     * @param  SubCommand $subCommand
+     *
+     * @throws CommandConfigurationException
+     * @return $this
+     */
     public function addSubCommand(SubCommand $subCommand): self {
         foreach ([$subCommand->getName(), ...$subCommand->getAliases()] as $name) {
             if ($this->getSubCommand($name) !== null) {
@@ -73,6 +93,13 @@ abstract class Command extends PMCommand implements PluginOwned {
         return $this;
     }
 
+    /**
+     * Finds a sub-command by name or alias.
+     *
+     * @param  string $name
+     *
+     * @return SubCommand|null
+     */
     public function getSubCommand(string $name): ?SubCommand {
         foreach ($this->subCommands as $subCommand) {
             if ($subCommand->matches($name)) {
@@ -83,11 +110,22 @@ abstract class Command extends PMCommand implements PluginOwned {
         return null;
     }
 
+    /**
+     * Returns sub-commands registered on this command.
+     *
+     * @return SubCommand[]
+     */
     public function getSubCommands(): array {
         return $this->subCommands;
     }
 
-    /** @return string[] */
+    /**
+     * Builds usage lines for this command and every nested sub-command.
+     *
+     * @param  string|null $label
+     *
+     * @return string[]
+     */
     public function getUsageLines(?string $label = null): array {
         $label ??= $this->getName();
         $lines = [$this->getUsageLine($label)];
@@ -99,6 +137,15 @@ abstract class Command extends PMCommand implements PluginOwned {
         return array_values(array_unique($lines));
     }
 
+    /**
+     * Handles PocketMine command execution and routes to sub-commands when needed.
+     *
+     * @param  CommandSender $sender
+     * @param  string        $commandLabel
+     * @param  string[]      $args
+     *
+     * @return void
+     */
     public function execute(CommandSender $sender, string $commandLabel, array $args): void {
         $ruleResult = $this->testRules($sender);
         if (!$ruleResult->isSuccess()) {
@@ -149,16 +196,46 @@ abstract class Command extends PMCommand implements PluginOwned {
         }
     }
 
+    /**
+     * Runs the command after rules and argument validation have passed.
+     *
+     * @param  CommandContext $context
+     *
+     * @return mixed
+     */
     abstract protected function onRun(CommandContext $context): mixed;
 
+    /**
+     * Handles a successful command result.
+     *
+     * @param  CommandSuccess $result
+     *
+     * @return void
+     */
     public function success(CommandSuccess $result): void {
     }
 
+    /**
+     * Handles a failed command result.
+     *
+     * @param  CommandFailure $result
+     *
+     * @return void
+     */
     public function fail(CommandFailure $result): void {
         $result->getSender()->sendMessage($result->getMessage());
     }
 
-    /** @throws CommandConfigurationException */
+    /**
+     * Resolves command metadata from constructor values or CommandInfo attributes.
+     *
+     * @param  string|null $name
+     * @param  string|null $description
+     * @param  string[]    $aliases
+     *
+     * @throws CommandConfigurationException
+     * @return array{0: string, 1: string, 2: string[]}
+     */
     private function resolveMetadata(?string $name, ?string $description, array $aliases): array {
         $attributes = (new ReflectionClass($this))->getAttributes(CommandInfo::class);
         if ($attributes !== []) {
@@ -206,6 +283,15 @@ abstract class Command extends PMCommand implements PluginOwned {
         $this->addRule(new PermissionRule($permission));
     }
 
+    /**
+     * Registers a PocketMine permission and attaches it below user or operator root.
+     *
+     * @param  string      $permission
+     * @param  bool        $isOp
+     * @param  string|null $description
+     *
+     * @return void
+     */
     public function registerPermission(string $permission, bool $isOp, ?string $description = null): void {
         $permissionManager = PermissionManager::getInstance();
         $permissionObject = $permissionManager->getPermission($permission);
@@ -222,11 +308,21 @@ abstract class Command extends PMCommand implements PluginOwned {
         $parentPermission?->addChild($permission, true);
     }
 
+    /**
+     * Returns the permission node required to execute this command.
+     *
+     * @return string
+     */
     public function getCommandPermission(): string {
         return $this->commandPermission;
     }
 
-    /** @throws CommandConfigurationException */
+    /**
+     * Loads command arguments declared with CommandArgument attributes.
+     *
+     * @throws CommandConfigurationException
+     * @return void
+     */
     private function loadAttributeArguments(): void {
         foreach ((new ReflectionClass($this))->getAttributes(CommandArgument::class) as $attribute) {
             /** @var CommandArgument $definition */

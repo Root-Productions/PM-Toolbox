@@ -25,7 +25,15 @@ final class CustomItemRegistry {
     /** @var array<string, ItemBuilder> */
     private array $items = [];
 
-    /** @throws ItemRegistryException|ReflectionException */
+    /**
+     * Registers a custom item and resolves its format from class attributes.
+     *
+     * @param  string  $runtimeId
+     * @param  Closure $itemClosure
+     *
+     * @throws ItemRegistryException|ReflectionException
+     * @return void
+     */
     public function register(string $runtimeId, Closure $itemClosure): void {
         $item = $itemClosure();
         if (!$item instanceof Item) {
@@ -44,7 +52,15 @@ final class CustomItemRegistry {
         }
     }
 
-    /** @throws ReflectionException|ItemRegistryException */
+    /**
+     * Registers an item that uses the legacy component format.
+     *
+     * @param  string $runtimeId
+     * @param  Item   $item
+     *
+     * @throws ReflectionException|ItemRegistryException
+     * @return void
+     */
     public function registerLegacyItem(string $runtimeId, Item $item): void {
         $format = ItemFormatEnum::fromItem($item);
         if ($format !== ItemFormatEnum::LEGACY) {
@@ -59,7 +75,15 @@ final class CustomItemRegistry {
         $this->deepRegister($itemBuilder);
     }
 
-    /** @throws ReflectionException|ItemRegistryException */
+    /**
+     * Registers an item that uses the data-driven component format.
+     *
+     * @param  string $runtimeId
+     * @param  Item   $item
+     *
+     * @throws ReflectionException|ItemRegistryException
+     * @return void
+     */
     public function registerDataDrivenItem(string $runtimeId, Item $item): void {
         $format = ItemFormatEnum::fromItem($item);
         if ($format !== ItemFormatEnum::DATA_DRIVEN) {
@@ -74,7 +98,14 @@ final class CustomItemRegistry {
         $this->deepRegister($itemBuilder);
     }
 
-    /** @throws ItemRegistryException */
+    /**
+     * Applies default and user-defined components to the item builder.
+     *
+     * @param  ItemBuilder $builder
+     *
+     * @throws ItemRegistryException
+     * @return void
+     */
     private function applyItemComponents(ItemBuilder $builder): void {
         $item = $builder->getItem();
 
@@ -103,6 +134,15 @@ final class CustomItemRegistry {
         }
     }
 
+    /**
+     * Inserts the item into PocketMine serializers, parsers and network dictionaries.
+     *
+     * @internal Prefer register(), registerLegacyItem() or registerDataDrivenItem().
+     *
+     * @param  ItemBuilder $builder
+     *
+     * @return void
+     */
     public function deepRegister(ItemBuilder $builder): void {
         $item = $builder->getItem();
         $runtimeId = $builder->getRuntimeId();

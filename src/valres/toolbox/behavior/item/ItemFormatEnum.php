@@ -15,14 +15,25 @@ enum ItemFormatEnum: int {
     case LEGACY = 0;
     case DATA_DRIVEN = 1;
 
-    /** @throws ReflectionException */
+    /**
+     * Resolves an item format from its class attributes.
+     *
+     * @param  Item $item
+     *
+     * @throws ReflectionException|InvalidArgumentException
+     * @return self
+     */
     public static function fromItem(Item $item): self {
         return self::fromClass($item::class);
     }
 
     /**
+     * Resolves an item format from DataDrivenItem or LegacyItem attributes.
+     *
      * @param class-string<Item> $itemClass
-     * @throws ReflectionException
+     *
+     * @throws ReflectionException|InvalidArgumentException
+     * @return self
      */
     public static function fromClass(string $itemClass): self {
         $reflection = new ReflectionClass($itemClass);

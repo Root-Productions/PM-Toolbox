@@ -17,6 +17,12 @@ final class ArgumentsList implements IteratorAggregate, Countable , ArrayAccess 
     private readonly CommandSender $sender;
     private array $arguments = [];
 
+    /**
+     * Creates a typed argument bag for a command execution.
+     *
+     * @param  CommandSender        $sender
+     * @param  array<string, mixed> $arguments
+     */
     public function __construct(CommandSender $sender, array $arguments = []) {
         $this->sender = $sender;
         $this->arguments = $arguments;
@@ -49,34 +55,86 @@ final class ArgumentsList implements IteratorAggregate, Countable , ArrayAccess 
         return count($this->arguments);
     }
 
+    /**
+     * Returns all parsed arguments as an associative array.
+     *
+     * @return array<string, mixed>
+     */
     public function toArray(): array {
         return $this->arguments;
     }
 
+    /**
+     * Reads an argument value or returns the provided default.
+     *
+     * @param  string $key
+     * @param  mixed  $default
+     *
+     * @return mixed
+     */
     public function get(string $key, mixed $default = null): mixed {
         return $this->arguments[$key] ?? $default;
     }
 
+    /**
+     * Checks whether an argument was parsed for the given key.
+     *
+     * @param  string $key
+     *
+     * @return bool
+     */
     public function has(string $key): bool {
         return array_key_exists($key, $this->arguments);
     }
 
+    /**
+     * Reads an argument as string.
+     *
+     * @param  string      $key
+     * @param  string|null $default
+     *
+     * @return string|null
+     */
     public function string(string $key, ?string $default = null): ?string {
         $value = $this->get($key, $default);
         return $value === null ? null : (string) $value;
     }
 
+    /**
+     * Reads an argument as integer.
+     *
+     * @param  string   $key
+     * @param  int|null $default
+     *
+     * @return int|null
+     */
     public function int(string $key, ?int $default = null): ?int {
         $value = $this->get($key, $default);
         return $value === null ? null : (int) $value;
     }
 
+    /**
+     * Reads an argument as boolean.
+     *
+     * @param  string    $key
+     * @param  bool|null $default
+     *
+     * @return bool|null
+     */
     public function bool(string $key, ?bool $default = null): ?bool {
         $value = $this->get($key, $default);
         return $value === null ? null : (bool) $value;
     }
 
-    /** @return Entity[] */
+    /**
+     * Resolves target arguments into entities and optionally invokes a callback for each target.
+     *
+     * @param  callable|string $key
+     * @param  callable|null   $callback
+     * @param  bool            $defaultToSender
+     *
+     * @return Entity[]
+     */
     public function resolveTargets(callable|string $key = "target", ?callable $callback = null, bool $defaultToSender = true): array {
         if (is_callable($key)) {
             $callback = $key;
@@ -104,6 +162,11 @@ final class ArgumentsList implements IteratorAggregate, Countable , ArrayAccess 
         return $targets;
     }
 
+    /**
+     * Returns the sender that executed the command.
+     *
+     * @return CommandSender
+     */
     public function sender(): CommandSender {
         return $this->sender;
     }

@@ -19,6 +19,16 @@ final class FormResponseGuard {
         $this->openForms = new WeakMap();
     }
 
+    /**
+     * Tracks form ids sent to each network session.
+     *
+     * @internal Packet interceptor callback.
+     *
+     * @param  ModalFormRequestPacket $packet
+     * @param  NetworkSession         $session
+     *
+     * @return bool
+     */
     #[OutgoingPacket(ModalFormRequestPacket::class)]
     public function trackOpenForm(ModalFormRequestPacket $packet, NetworkSession $session): bool {
         $forms = $this->openForms[$session] ?? [];
@@ -28,6 +38,16 @@ final class FormResponseGuard {
         return true;
     }
 
+    /**
+     * Rejects responses for form ids that are not open for the network session.
+     *
+     * @internal Packet interceptor callback.
+     *
+     * @param  ModalFormResponsePacket $packet
+     * @param  NetworkSession          $session
+     *
+     * @return bool
+     */
     #[IncomingPacket(ModalFormResponsePacket::class)]
     public function guardResponse(ModalFormResponsePacket $packet, NetworkSession $session): bool {
         $forms = $this->openForms[$session] ?? [];

@@ -15,6 +15,15 @@ use pocketmine\nbt\tag\Tag;
 
 /** Converts component scalar and array values into NBT tags. */
 final class ComponentNbtHelper {
+    /**
+     * Converts an associative array into a CompoundTag and skips null values.
+     *
+     * @internal Low-level serialization helper for item components and properties.
+     *
+     * @param  array<string, mixed> $values
+     *
+     * @return CompoundTag
+     */
     public static function compound(array $values): CompoundTag {
         $tag = CompoundTag::create();
         foreach ($values as $name => $value) {
@@ -28,6 +37,15 @@ final class ComponentNbtHelper {
         return $tag;
     }
 
+    /**
+     * Converts a string array into a typed NBT list.
+     *
+     * @internal Low-level serialization helper for item components and properties.
+     *
+     * @param  string[] $values
+     *
+     * @return ListTag
+     */
     public static function stringList(array $values): ListTag {
         return new ListTag(array_map(
             static fn(string $value): StringTag => new StringTag($value),
@@ -35,6 +53,15 @@ final class ComponentNbtHelper {
         ), NBT::TAG_String);
     }
 
+    /**
+     * Converts an array of associative arrays or CompoundTags into a compound NBT list.
+     *
+     * @internal Low-level serialization helper for item components and properties.
+     *
+     * @param  array<int, array<string, mixed>|CompoundTag> $values
+     *
+     * @return ListTag
+     */
     public static function compoundList(array $values): ListTag {
         return new ListTag(array_map(
             static fn(array|CompoundTag $value): CompoundTag => $value instanceof CompoundTag ? $value : self::compound($value),
@@ -42,6 +69,15 @@ final class ComponentNbtHelper {
         ), NBT::TAG_Compound);
     }
 
+    /**
+     * Converts a scalar, array or existing tag into the matching NBT tag type.
+     *
+     * @internal Low-level serialization helper for item components and properties.
+     *
+     * @param  mixed $value
+     *
+     * @return Tag
+     */
     public static function tag(mixed $value): Tag {
         if ($value instanceof Tag) {
             return $value;
@@ -57,6 +93,15 @@ final class ComponentNbtHelper {
         };
     }
 
+    /**
+     * Converts an array into either a CompoundTag or a typed ListTag.
+     *
+     * @internal Low-level serialization helper for item components and properties.
+     *
+     * @param  array<int|string, mixed> $value
+     *
+     * @return Tag
+     */
     private static function arrayTag(array $value): Tag {
         if (!array_is_list($value)) {
             return self::compound($value);
