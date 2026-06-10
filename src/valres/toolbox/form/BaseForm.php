@@ -8,15 +8,19 @@ use pocketmine\form\Form as PMMPForm;
 use pocketmine\player\Player;
 
 abstract class BaseForm implements PMMPForm {
-    private const TRACKING_OPEN = 0;
-    private const TRACKING_HANDLING = 1;
-    private const TRACKING_CLOSED = 2;
+    private const STATE_OPEN = 0;
+    private const STATE_HANDLING = 1;
+    private const STATE_CLOSED = 2;
 
     protected array $data = [];
+
+    /** @var callable|null */
     private mixed $submitHandler;
+
+    /** @var callable|null */
     private mixed $closeHandler = null;
-    private int $trackingGeneration = 0;
-    /** @var array<string, array{generation: int, state: int}> */
+
+    private int $currentGeneration = 0;
     private array $trackingStates = [];
 
     public function __construct(?callable $submitHandler = null) {
@@ -24,7 +28,7 @@ abstract class BaseForm implements PMMPForm {
     }
 
     public function getCallable(): ?callable {
-        return is_callable($this->submitHandler) ? $this->submitHandler : null;
+        return $this->submitHandler;
     }
 
     public function setCallable(?callable $callable): static {
@@ -42,39 +46,42 @@ abstract class BaseForm implements PMMPForm {
     }
 
     public function setTitle(string $title): static {
-        $this->data["title"] = $title;
+        $this->data['title'] = $title;
         return $this;
     }
 
     public function getTitle(): string {
-        return (string) ($this->data["title"] ?? "");
+        return (string) ($this->data['title'] ?? '');
     }
 
-    final public function handleResponse(Player $player, $data): void {
-        $trackingGeneration = $this->beginTrackingHandle($player);
-        if ($trackingGeneration === null) {
+    public function isOpenFor(Player $player): bool {
+        $state = $this->trackingStates[$this->playerId($player)] ?? null;
+
+        return $state === null
+            || $state['generation'] !== $this->currentGeneration
+            || $state['state'] === self::STATE_OPEN;
+    }
+
+    public function isClosedFor(Player $player): bool {
+        return !$this->isOpenFor($player);
+    }
+
+    final public function handleResponse(Player $player, mixed $data): void {
+        $generation = $this->beginHandling($player);
+        if ($generation === null) {
             return;
         }
 
         try {
             if ($data === null) {
-                if (is_callable($this->closeHandler)) {
-                    ($this->closeHandler)($player);
-                }
+                ($this->closeHandler)($player);
                 return;
             }
 
             $response = $this->processData($data);
             $this->handleProcessedResponse($player, $response, $data);
         } finally {
-            $this->closeTrackingHandle($player, $trackingGeneration);
-        }
-    }
-
-    protected function handleProcessedResponse(Player $player, mixed $response, mixed $rawData): void {
-        $callable = $this->getCallable();
-        if ($callable !== null) {
-            $callable($player, $response, $rawData, $this);
+            $this->closeHandling($player, $generation);
         }
     }
 
@@ -82,59 +89,57 @@ abstract class BaseForm implements PMMPForm {
         return $data;
     }
 
+    protected function handleProcessedResponse(Player $player, mixed $response, mixed $rawData): void {
+        if ($this->submitHandler !== null) {
+            ($this->submitHandler)($player, $response, $rawData, $this);
+        }
+    }
+
     public function jsonSerialize(): array {
-        $this->trackingGeneration++;
-        $this->cleanupTrackingStates();
+        $this->currentGeneration++;
+        $this->pruneStaleTrackingStates();
 
         return $this->data;
     }
 
-    public function isOpenFor(Player $player): bool {
-        $state = $this->trackingStates[$this->getTrackingPlayerId($player)] ?? null;
-        return $state === null
-            || $state["generation"] !== $this->trackingGeneration
-            || $state["state"] === self::TRACKING_OPEN;
-    }
+    private function beginHandling(Player $player): ?int {
+        $id = $this->playerId($player);
+        $generation = $this->currentGeneration;
+        $state = $this->trackingStates[$id] ?? null;
 
-    public function isClosedFor(Player $player): bool {
-        return !$this->isOpenFor($player);
-    }
+        $alreadyHandledOrClosed = $state !== null
+            && $state['generation'] === $generation
+            && $state['state'] !== self::STATE_OPEN;
 
-    private function beginTrackingHandle(Player $player): ?int {
-        $playerId = $this->getTrackingPlayerId($player);
-        $generation = $this->trackingGeneration;
-        $state = $this->trackingStates[$playerId] ?? null;
-
-        if ($state !== null
-            && $state["generation"] === $generation
-            && $state["state"] !== self::TRACKING_OPEN
-        ) {
+        if ($alreadyHandledOrClosed) {
             return null;
         }
 
-        $this->trackingStates[$playerId] = [
-            "generation" => $generation,
-            "state" => self::TRACKING_HANDLING
+        $this->trackingStates[$id] = [
+            'generation' => $generation,
+            'state' => self::STATE_HANDLING,
         ];
 
         return $generation;
     }
 
-    private function closeTrackingHandle(Player $player, int $generation): void {
-        $this->trackingStates[$this->getTrackingPlayerId($player)] = [
-            "generation" => $generation,
-            "state" => self::TRACKING_CLOSED
+    private function closeHandling(Player $player, int $generation): void {
+        $this->trackingStates[$this->playerId($player)] = [
+            'generation' => $generation,
+            'state' => self::STATE_CLOSED,
         ];
     }
 
-    private function getTrackingPlayerId(Player $player): string {
+    private function playerId(Player $player): string {
         return $player->getUniqueId()->toString();
     }
 
-    private function cleanupTrackingStates(): void {
-        foreach ($this->trackingStates as $playerId => $state) {
-            if ($state["generation"] < $this->trackingGeneration - 1) {
-                unset($this->trackingStates[$playerId]);
+    private function pruneStaleTrackingStates(): void {
+        $cutoff = $this->currentGeneration - 1;
+
+        foreach ($this->trackingStates as $id => $state) {
+            if ($state['generation'] < $cutoff) {
+                unset($this->trackingStates[$id]);
             }
         }
     }
