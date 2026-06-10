@@ -8,9 +8,16 @@ use pocketmine\form\Form as PMMPForm;
 use pocketmine\player\Player;
 
 abstract class BaseForm implements PMMPForm {
+    private const TRACKING_OPEN = 0;
+    private const TRACKING_HANDLING = 1;
+    private const TRACKING_CLOSED = 2;
+
     protected array $data = [];
     private mixed $submitHandler;
     private mixed $closeHandler = null;
+    private int $trackingGeneration = 0;
+    /** @var array<string, array{generation: int, state: int}> */
+    private array $trackingStates = [];
 
     public function __construct(?callable $submitHandler = null) {
         $this->submitHandler = $submitHandler;
@@ -44,15 +51,24 @@ abstract class BaseForm implements PMMPForm {
     }
 
     final public function handleResponse(Player $player, $data): void {
-        if ($data === null) {
-            if (is_callable($this->closeHandler)) {
-                ($this->closeHandler)($player);
-            }
+        $trackingGeneration = $this->beginTrackingHandle($player);
+        if ($trackingGeneration === null) {
             return;
         }
 
-        $response = $this->processData($data);
-        $this->handleProcessedResponse($player, $response, $data);
+        try {
+            if ($data === null) {
+                if (is_callable($this->closeHandler)) {
+                    ($this->closeHandler)($player);
+                }
+                return;
+            }
+
+            $response = $this->processData($data);
+            $this->handleProcessedResponse($player, $response, $data);
+        } finally {
+            $this->closeTrackingHandle($player, $trackingGeneration);
+        }
     }
 
     protected function handleProcessedResponse(Player $player, mixed $response, mixed $rawData): void {
@@ -67,6 +83,59 @@ abstract class BaseForm implements PMMPForm {
     }
 
     public function jsonSerialize(): array {
+        $this->trackingGeneration++;
+        $this->cleanupTrackingStates();
+
         return $this->data;
+    }
+
+    public function isOpenFor(Player $player): bool {
+        $state = $this->trackingStates[$this->getTrackingPlayerId($player)] ?? null;
+        return $state === null
+            || $state["generation"] !== $this->trackingGeneration
+            || $state["state"] === self::TRACKING_OPEN;
+    }
+
+    public function isClosedFor(Player $player): bool {
+        return !$this->isOpenFor($player);
+    }
+
+    private function beginTrackingHandle(Player $player): ?int {
+        $playerId = $this->getTrackingPlayerId($player);
+        $generation = $this->trackingGeneration;
+        $state = $this->trackingStates[$playerId] ?? null;
+
+        if ($state !== null
+            && $state["generation"] === $generation
+            && $state["state"] !== self::TRACKING_OPEN
+        ) {
+            return null;
+        }
+
+        $this->trackingStates[$playerId] = [
+            "generation" => $generation,
+            "state" => self::TRACKING_HANDLING
+        ];
+
+        return $generation;
+    }
+
+    private function closeTrackingHandle(Player $player, int $generation): void {
+        $this->trackingStates[$this->getTrackingPlayerId($player)] = [
+            "generation" => $generation,
+            "state" => self::TRACKING_CLOSED
+        ];
+    }
+
+    private function getTrackingPlayerId(Player $player): string {
+        return $player->getUniqueId()->toString();
+    }
+
+    private function cleanupTrackingStates(): void {
+        foreach ($this->trackingStates as $playerId => $state) {
+            if ($state["generation"] < $this->trackingGeneration - 1) {
+                unset($this->trackingStates[$playerId]);
+            }
+        }
     }
 }
