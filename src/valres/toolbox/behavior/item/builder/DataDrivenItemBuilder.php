@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace valres\toolbox\behavior\item\builder;
 
+use pocketmine\data\bedrock\ItemTagToIdMap;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\world\format\io\GlobalItemDataHandlers;
-use ReflectionClass;
-use ReflectionException;
 use valres\toolbox\behavior\item\component\DataDrivenItemComponent;
 use valres\toolbox\behavior\item\component\TagsComponent;
 use valres\toolbox\behavior\item\ItemFormatEnum;
@@ -117,7 +116,6 @@ class DataDrivenItemBuilder extends ItemBuilder {
     /**
      * Builds the network component NBT sent through the item type dictionary.
      *
-     * @throws ReflectionException
      * @return CompoundTag
      */
     public function toNBT(): CompoundTag {
@@ -147,7 +145,6 @@ class DataDrivenItemBuilder extends ItemBuilder {
      *
      * @param  DataDrivenItemComponent $component
      *
-     * @throws ReflectionException
      * @return void
      */
     private function registerTags(DataDrivenItemComponent $component): void {
@@ -159,12 +156,8 @@ class DataDrivenItemBuilder extends ItemBuilder {
             ->serializeType($this->getItem())
             ->getName();
 
-        $reflection = new ReflectionClass("pocketmine\\data\\bedrock\\ItemTagToIdMap");
-        $map = $reflection->getMethod("getInstance")->invoke(null);
-        $addIdToTag = $reflection->getMethod("addIdToTag");
-
         foreach ($component->getTags() as $tag) {
-            $addIdToTag->invoke($map, $tag, $typeName);
+            ItemTagToIdMap::getInstance()->addIdToTag($tag, $typeName);
         }
     }
 }
