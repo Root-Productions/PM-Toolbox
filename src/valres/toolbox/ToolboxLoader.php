@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use pocketmine\event\EventPriority;
 use pocketmine\command\Command;
 use pocketmine\plugin\PluginBase;
+use pocketmine\plugin\PluginEnableOrder;
 use valres\toolbox\behavior\BehaviorInterceptor;
 use valres\toolbox\behavior\block\CustomBlockRegistry;
 use valres\toolbox\command\CommandInterceptor;
@@ -56,6 +57,10 @@ class ToolboxLoader {
         if (!self::$loaded) {
             self::$loaded = true;
             self::$loader = $loader;
+        }
+
+        if ($loader->getDescription()->getOrder() !== PluginEnableOrder::STARTUP) {
+            throw new \RuntimeException("plugin.yml must contains 'load: STARTUP.'");
         }
 
         if ($loadManagers) {
