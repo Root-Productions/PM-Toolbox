@@ -27,6 +27,9 @@ final class CustomItemRegistry {
     /** @var array<string, ItemBuilder> */
     private array $items = [];
 
+    /** @var array<int, string> */
+    private array $typeIds = [];
+
     /**
      * Registers a custom item and resolves its format from class attributes.
      *
@@ -151,6 +154,16 @@ final class CustomItemRegistry {
         $runtimeId = $builder->getRuntimeId();
         $typeId = $builder->getTypeId();
 
+        if (isset($this->items[$runtimeId])) {
+            throw new ItemRegistryException("Item '". $runtimeId . "' is already registered.");
+        }
+
+        if (isset($this->typeIds[$typeId])) {
+            throw new ItemRegistryException(
+                "Item type ID '" . $typeId . "' is already registered as '" . $this->typeIds[$typeId] . "'."
+            );
+        }
+
         GlobalItemDataHandlers::getDeserializer()
             ->map($runtimeId, $builder->getDeserializer() ?? fn() => clone $item);
         GlobalItemDataHandlers::getSerializer()
@@ -168,12 +181,13 @@ final class CustomItemRegistry {
         $legacyIdentifier = $identifier;
         if (str_contains($identifier, ":")) {
             [, $legacyIdentifier] = explode(":", $identifier, 2);
-            StringToItemParser::getInstance()->register($legacyIdentifier, fn () => clone $item);
+            $this->registerItemParserAlias($legacyIdentifier, fn () => clone $item);
         }
-        StringToItemParser::getInstance()->register($identifier, fn () => clone $item);
+        $this->registerItemParserAlias($identifier, fn () => clone $item);
         LegacyItemIdToStringIdMap::getInstance()->add($legacyIdentifier, $item->getTypeId());
 
         $this->items[$runtimeId] = $builder;
+        $this->typeIds[$typeId] = $runtimeId;
         CreativeInventoryManager::getInstance()->addToCreative($item);
     }
 
@@ -188,6 +202,16 @@ final class CustomItemRegistry {
 
         if (str_starts_with($runtimeId, "minecraft:")) {
             throw new InvalidArgumentException("Custom item runtime ID cannot use the minecraft namespace.");
+        }
+    }
+
+    private function registerItemParserAlias(string $alias, Closure $factory): void {
+        try {
+            StringToItemParser::getInstance()->register($alias, $factory);
+        } catch (InvalidArgumentException $exception) {
+            if (!str_contains($exception->getMessage(), "already registered")) {
+                throw $exception;
+            }
         }
     }
 }
