@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
+use valres\toolbox\behavior\item\component\type\BlockDescriptor;
 
 /** Allows the item to place an entity into the world. */
 final class EntityPlacerComponent extends DataDrivenItemComponent {
+    /**
+     * @param array<int, BlockDescriptor|string|array>|null $dispenseOn
+     * @param array<int, BlockDescriptor|string|array>|null $useOn
+     */
     public function __construct(
         private readonly string $entity,
         private readonly ?array $dispenseOn = null,

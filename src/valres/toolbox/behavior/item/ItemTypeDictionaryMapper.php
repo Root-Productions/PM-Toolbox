@@ -61,15 +61,24 @@ final class ItemTypeDictionaryMapper {
      * @return void
      */
     public function map(ItemBuilder $builder, ItemTypeEntry $entry): void {
-        $this->validateEntry($entry);
+        $this->validateEntry($entry, false);
 
-        $dictionary = TypeConverter::getInstance()->getItemTypeDictionary();
-        $this->updateMappings($dictionary, $entry);
+        $this->registerEntry($entry, false);
 
         $this->items[$entry->getStringId()] = [
             "builder" => $builder,
             "entry" => $entry
         ];
+    }
+
+    /**
+     * Adds a raw item type entry without associating it to a toolbox item builder.
+     *
+     * @internal Used by block-items that are backed by PocketMine ItemBlock instances.
+     */
+    public function registerEntry(ItemTypeEntry $entry, bool $allowNegativeNumericId = false): void {
+        $this->validateEntry($entry, $allowNegativeNumericId);
+        $this->updateMappings(TypeConverter::getInstance()->getItemTypeDictionary(), $entry);
     }
 
     /**
@@ -80,11 +89,11 @@ final class ItemTypeDictionaryMapper {
      * @throws InvalidArgumentException
      * @return void
      */
-    private static function validateEntry(ItemTypeEntry $itemTypeEntry): void {
+    private static function validateEntry(ItemTypeEntry $itemTypeEntry, bool $allowNegativeNumericId): void {
         $numericId = $itemTypeEntry->getNumericId();
         $stringId = $itemTypeEntry->getStringId();
 
-        if ($numericId < 0) {
+        if ($numericId < 0 && !$allowNegativeNumericId) {
             throw new InvalidArgumentException("Numeric ID invalid: {$numericId}.");
         }
 
@@ -101,10 +110,10 @@ final class ItemTypeDictionaryMapper {
      * @param  object        $dictionary
      * @param  ItemTypeEntry $itemTypeEntry
      *
-     * @throws RuntimeException
      * @return void
+     * @throws RuntimeException
      */
-    private function updateMappings($dictionary, ItemTypeEntry $itemTypeEntry): void {
+    private function updateMappings(object $dictionary, ItemTypeEntry $itemTypeEntry): void {
         $numericId = $itemTypeEntry->getNumericId();
         $stringId  = $itemTypeEntry->getStringId();
 

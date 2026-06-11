@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
+use valres\toolbox\behavior\item\component\type\EquipmentSlot;
 
 /** Allows the item to be worn in an equipment slot. */
 final class WearableItemComponent extends DataDrivenItemComponent {
@@ -16,7 +17,7 @@ final class WearableItemComponent extends DataDrivenItemComponent {
     const WEAPON_OFF_HAND = "slot.weapon.offhand";
 
     public function __construct(
-        private readonly string $slot,
+        private readonly EquipmentSlot|string $slot,
         private readonly ?int $protection = null,
         private readonly ?bool $hidesPlayerLocation = null
     ) {

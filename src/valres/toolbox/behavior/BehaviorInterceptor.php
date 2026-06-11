@@ -8,6 +8,7 @@ use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\ResourcePackStackPacket;
 use pocketmine\network\mcpe\protocol\StartGamePacket;
 use pocketmine\network\mcpe\protocol\types\Experiments;
+use valres\toolbox\behavior\block\BlockPaletteEntryMapper;
 use valres\toolbox\packet\attribute\IncomingPacket;
 
 final class BehaviorInterceptor {
@@ -22,6 +23,8 @@ final class BehaviorInterceptor {
     #[IncomingPacket(StartGamePacket::class)]
     public function onStartGame(StartGamePacket $pk, NetworkSession $session): bool {
         $pk->levelSettings->experiments = $this->experiments;
+        $pk->blockNetworkIdsAreHashes = true;
+        $pk->blockPalette = BlockPaletteEntryMapper::getInstance()->getEntries();
         return true;
     }
 

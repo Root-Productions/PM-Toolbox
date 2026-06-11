@@ -9,6 +9,7 @@ use pocketmine\event\EventPriority;
 use pocketmine\command\Command;
 use pocketmine\plugin\PluginBase;
 use valres\toolbox\behavior\BehaviorInterceptor;
+use valres\toolbox\behavior\block\CustomBlockRegistry;
 use valres\toolbox\command\CommandInterceptor;
 use valres\toolbox\command\default\world\WorldsCommand;
 use valres\toolbox\discord\DiscordLogHandler;
@@ -44,6 +45,10 @@ class ToolboxLoader {
      */
     public static function getLoader(): PluginBase {
         return self::$loader;
+    }
+
+    public static function isLoaded(): bool {
+        return self::$loaded;
     }
 
     /** @throws ManagerException */
@@ -88,6 +93,8 @@ class ToolboxLoader {
             ->registerOutgoing(new CommandInterceptor())
             ->registerAnnotated(new BehaviorInterceptor())
             ->registerAnnotated(new FormResponseGuard());
+
+        CustomBlockRegistry::getInstance()->syncAsyncWorkers($loader);
     }
 
     public static function getManagerHandler(): ManagerHandler {

@@ -7,9 +7,11 @@ namespace valres\toolbox\behavior\item\component;
 use pocketmine\block\Block;
 use pocketmine\nbt\tag\Tag;
 use pocketmine\world\format\io\GlobalBlockStateHandlers;
+use valres\toolbox\behavior\item\component\type\BlockDescriptor;
 
 /** Allows the item to place a block when used. */
 final class BlockPlacerItemComponent extends DataDrivenItemComponent {
+    /** @param array<int, BlockDescriptor|string|array>|null $useOn */
     public function __construct(
         private readonly string $block,
         private readonly ?bool $replaceBlockItem = null,

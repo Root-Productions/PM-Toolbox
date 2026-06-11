@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
+use valres\toolbox\behavior\item\component\type\Ammunition;
 
 /** Allows the item to shoot projectile ammunition. */
 final class ShooterComponent extends DataDrivenItemComponent {
+    /** @param array<int, Ammunition|array{item: string, search_inventory?: bool, use_in_creative?: bool, use_offhand?: bool}> $ammunition */
     public function __construct(
         private readonly array $ammunition,
         private readonly ?bool $chargeOnDraw = null,
@@ -25,13 +27,8 @@ final class ShooterComponent extends DataDrivenItemComponent {
         ?bool $searchInventory = null,
         ?bool $useInCreative = null,
         ?bool $useOffhand = null
-    ): array {
-        return array_filter([
-            "item" => $item,
-            "search_inventory" => $searchInventory,
-            "use_in_creative" => $useInCreative,
-            "use_offhand" => $useOffhand
-        ], static fn(mixed $value): bool => $value !== null);
+    ): Ammunition {
+        return new Ammunition($item, $searchInventory, $useInCreative, $useOffhand);
     }
 
     public function toNBT(): Tag {

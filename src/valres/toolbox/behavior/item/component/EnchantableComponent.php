@@ -6,12 +6,13 @@ namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\exception\ItemRegistryException;
+use valres\toolbox\behavior\item\component\type\EnchantSlot;
 
 /** Allows the item to receive enchantments for a specific slot type. */
 final class EnchantableComponent extends DataDrivenItemComponent {
     /** @throws ItemRegistryException */
     public function __construct(
-        private readonly string $slot,
+        private readonly EnchantSlot|string $slot,
         private readonly int $value
     ) {
         if ($this->value < 0 || $this->value > 255) {

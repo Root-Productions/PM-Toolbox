@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace valres\toolbox\behavior\item;
 
 use Closure;
+use InvalidArgumentException;
 use pocketmine\data\bedrock\item\SavedItemData;
 use pocketmine\data\bedrock\item\upgrade\LegacyItemIdToStringIdMap;
 use pocketmine\item\Item;
@@ -14,6 +15,7 @@ use pocketmine\network\mcpe\protocol\types\ItemTypeEntry;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\world\format\io\GlobalItemDataHandlers;
 use ReflectionException;
+use valres\toolbox\behavior\creative\CreativeInventoryManager;
 use valres\toolbox\behavior\exception\ItemRegistryException;
 use valres\toolbox\behavior\item\builder\DataDrivenItemBuilder;
 use valres\toolbox\behavior\item\builder\ItemBuilder;
@@ -37,7 +39,7 @@ final class CustomItemRegistry {
     public function register(string $runtimeId, Closure $itemClosure): void {
         $item = $itemClosure();
         if (!$item instanceof Item) {
-            throw new ItemRegistryException("");
+            throw new ItemRegistryException("Item closure must return an Item.");
         }
 
         if (isset($this->items[$runtimeId])) {
@@ -62,6 +64,8 @@ final class CustomItemRegistry {
      * @return void
      */
     public function registerLegacyItem(string $runtimeId, Item $item): void {
+        $this->validateRuntimeId($runtimeId);
+
         $format = ItemFormatEnum::fromItem($item);
         if ($format !== ItemFormatEnum::LEGACY) {
             throw new ItemRegistryException("Item must be a Legacy item.");
@@ -106,7 +110,7 @@ final class CustomItemRegistry {
      * @throws ItemRegistryException
      * @return void
      */
-    private function applyItemComponents(ItemBuilder $builder): void {
+    public function applyItemComponents(ItemBuilder $builder): void {
         $item = $builder->getItem();
 
         ItemDataResolver::applyDefault($builder);
@@ -140,7 +144,6 @@ final class CustomItemRegistry {
      * @internal Prefer register(), registerLegacyItem() or registerDataDrivenItem().
      *
      * @param  ItemBuilder $builder
-     *
      * @return void
      */
     public function deepRegister(ItemBuilder $builder): void {
@@ -171,5 +174,20 @@ final class CustomItemRegistry {
         LegacyItemIdToStringIdMap::getInstance()->add($legacyIdentifier, $item->getTypeId());
 
         $this->items[$runtimeId] = $builder;
+        CreativeInventoryManager::getInstance()->addToCreative($item);
+    }
+
+    private function validateRuntimeId(string $runtimeId): void {
+        if (trim($runtimeId) === "") {
+            throw new InvalidArgumentException("Block runtime ID cannot be empty.");
+        }
+
+        if (!str_contains($runtimeId, ":")) {
+            throw new InvalidArgumentException("Item runtime ID '{$runtimeId}' must be namespaced.");
+        }
+
+        if (str_starts_with($runtimeId, "minecraft:")) {
+            throw new InvalidArgumentException("Custom item runtime ID cannot use the minecraft namespace.");
+        }
     }
 }

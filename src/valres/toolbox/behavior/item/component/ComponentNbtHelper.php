@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace valres\toolbox\behavior\item\component;
 
+use BackedEnum;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
@@ -12,6 +13,7 @@ use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\nbt\tag\Tag;
+use valres\toolbox\behavior\item\component\type\ItemComponentValue;
 
 /** Converts component scalar and array values into NBT tags. */
 final class ComponentNbtHelper {
@@ -27,6 +29,7 @@ final class ComponentNbtHelper {
     public static function compound(array $values): CompoundTag {
         $tag = CompoundTag::create();
         foreach ($values as $name => $value) {
+            $value = self::normalizeValue($value);
             if ($value === null) {
                 continue;
             }
@@ -58,13 +61,23 @@ final class ComponentNbtHelper {
      *
      * @internal Low-level serialization helper for item components and properties.
      *
-     * @param  array<int, array<string, mixed>|CompoundTag> $values
+     * @param  array<int, array<string, mixed>|CompoundTag|ItemComponentValue> $values
      *
      * @return ListTag
      */
     public static function compoundList(array $values): ListTag {
         return new ListTag(array_map(
-            static fn(array|CompoundTag $value): CompoundTag => $value instanceof CompoundTag ? $value : self::compound($value),
+            static function (array|CompoundTag|ItemComponentValue $value): CompoundTag {
+                if ($value instanceof CompoundTag) {
+                    return $value;
+                }
+
+                if ($value instanceof ItemComponentValue) {
+                    return self::compound($value->toArray());
+                }
+
+                return self::compound($value);
+            },
             array_values($values)
         ), NBT::TAG_Compound);
     }
@@ -79,6 +92,8 @@ final class ComponentNbtHelper {
      * @return Tag
      */
     public static function tag(mixed $value): Tag {
+        $value = self::normalizeValue($value);
+
         if ($value instanceof Tag) {
             return $value;
         }
@@ -103,6 +118,8 @@ final class ComponentNbtHelper {
      * @return Tag
      */
     private static function arrayTag(array $value): Tag {
+        $value = self::normalizeValue($value);
+
         if (!array_is_list($value)) {
             return self::compound($value);
         }
@@ -118,5 +135,21 @@ final class ComponentNbtHelper {
         }
 
         return self::compoundList($values);
+    }
+
+    private static function normalizeValue(mixed $value): mixed {
+        if ($value instanceof ItemComponentValue) {
+            return $value->toArray();
+        }
+
+        if ($value instanceof BackedEnum) {
+            return $value->value;
+        }
+
+        if (is_array($value)) {
+            return array_map(static fn(mixed $entry): mixed => self::normalizeValue($entry), $value);
+        }
+
+        return $value;
     }
 }

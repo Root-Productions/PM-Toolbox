@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace valres\toolbox\behavior\item\component;
 
 use pocketmine\nbt\tag\Tag;
+use valres\toolbox\behavior\item\component\type\CooldownType;
 
 /** Defines the cooldown category and duration triggered by the item. */
 final class CooldownComponent extends DataDrivenItemComponent {
@@ -14,7 +15,7 @@ final class CooldownComponent extends DataDrivenItemComponent {
     public function __construct(
         private readonly string $category,
         private readonly float $duration,
-        private readonly ?string $type = null
+        private readonly CooldownType|string|null $type = null
     ) {
     }
 
