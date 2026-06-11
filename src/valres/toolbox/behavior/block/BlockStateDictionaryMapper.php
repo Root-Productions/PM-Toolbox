@@ -17,7 +17,6 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
 use RuntimeException;
-use valres\toolbox\behavior\block\builder\BlockBuilder;
 
 final class BlockStateDictionaryMapper {
     use SingletonTrait;

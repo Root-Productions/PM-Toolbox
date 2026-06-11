@@ -29,7 +29,6 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
 use valres\toolbox\behavior\attribute\CreativeInventoryInfo;
-use valres\toolbox\behavior\block\builder\BlockBuilder;
 use valres\toolbox\behavior\block\task\AsyncRegisterBlocksTask;
 use valres\toolbox\behavior\creative\CreativeInventoryManager;
 use valres\toolbox\behavior\exception\BlockRegistryException;

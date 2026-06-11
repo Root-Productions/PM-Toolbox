@@ -9,7 +9,6 @@ use pocketmine\data\bedrock\block\convert\BlockStateReader;
 use pocketmine\data\bedrock\block\convert\BlockStateWriter;
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
 use pocketmine\network\mcpe\protocol\serializer\NetworkNbtSerializer;
-use valres\toolbox\behavior\block\builder\BlockBuilder;
 use valres\toolbox\behavior\block\component\BlockComponent;
 use valres\toolbox\behavior\block\permutation\BlockPermutation;
 use valres\toolbox\behavior\block\property\BlockStateProperty;

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace valres\toolbox\behavior\block;
 
 use pocketmine\block\Flowable;
-use valres\toolbox\behavior\block\builder\BlockBuilder;
 use valres\toolbox\behavior\block\component\CollisionBoxComponent;
 use valres\toolbox\behavior\block\component\ConnectionRuleComponent;
 use valres\toolbox\behavior\block\component\DestructibleByExplosionComponent;

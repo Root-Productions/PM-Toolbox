@@ -10,7 +10,7 @@ use pocketmine\block\Block;
 use pocketmine\scheduler\AsyncTask;
 use ReflectionException;
 use valres\toolbox\behavior\block\AsyncBlockRegistrationStore;
-use valres\toolbox\behavior\block\builder\BlockBuilder;
+use valres\toolbox\behavior\block\BlockBuilder;
 use valres\toolbox\behavior\block\component\RawBlockComponent;
 use valres\toolbox\behavior\block\CustomBlockRegistry;
 use valres\toolbox\behavior\block\permutation\BlockPermutation;

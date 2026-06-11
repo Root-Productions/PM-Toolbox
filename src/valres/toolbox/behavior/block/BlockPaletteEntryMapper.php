@@ -7,7 +7,6 @@ namespace valres\toolbox\behavior\block;
 use pocketmine\network\mcpe\protocol\types\BlockPaletteEntry;
 use pocketmine\utils\SingletonTrait;
 use RuntimeException;
-use valres\toolbox\behavior\block\builder\BlockBuilder;
 
 final class BlockPaletteEntryMapper {
     use SingletonTrait;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace valres\toolbox\behavior\block\builder;
+namespace valres\toolbox\behavior\block;
 
 use Closure;
 use pocketmine\block\Block;
@@ -15,7 +15,6 @@ use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\convert\BlockStateDictionaryEntry;
 use ReflectionException;
 use RuntimeException;
-use valres\toolbox\behavior\block\BlockPaletteEntryMapper;
 use valres\toolbox\behavior\block\component\BlockComponent;
 use valres\toolbox\behavior\block\permutation\BlockPermutation;
 use valres\toolbox\behavior\block\property\BlockStateProperty;

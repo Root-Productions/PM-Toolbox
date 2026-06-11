@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace valres\toolbox\behavior\block;
 
-use valres\toolbox\behavior\block\builder\BlockBuilder;
 
 interface ExtraBlockComponentsInterface {
     /**
