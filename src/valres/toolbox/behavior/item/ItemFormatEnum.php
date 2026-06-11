@@ -14,6 +14,7 @@ use valres\toolbox\behavior\attribute\LegacyItem;
 enum ItemFormatEnum: int {
     case LEGACY = 0;
     case DATA_DRIVEN = 1;
+    case NONE = 2;
 
     /**
      * Resolves an item format from its class attributes.

@@ -196,11 +196,11 @@ final class CustomBlockRegistry {
         if ($item instanceof ItemBlock) {
             ItemTypeDictionaryMapper::getInstance()->registerEntry(new ItemTypeEntry(
                 $stringId,
-                255 - $builder->getTypeId(),
+                $block->getTypeId(),
                 false,
-                ItemFormatEnum::LEGACY->value,
+                ItemFormatEnum::NONE->value,
                 new CacheableNbt(CompoundTag::create())
-            ), true);
+            ));
 
             GlobalItemDataHandlers::getDeserializer()->map($stringId, fn(SavedItemData $data) => clone $item);
             GlobalItemDataHandlers::getSerializer()->map($item, fn() => new SavedItemData($stringId));
