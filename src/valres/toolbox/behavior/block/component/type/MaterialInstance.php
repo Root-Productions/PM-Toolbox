@@ -16,7 +16,8 @@ final class MaterialInstance {
         private readonly bool|float|null $ambientOcclusion = null,
         private readonly ?bool $faceDimming = null,
         private readonly ?bool $isotropic = null,
-        private readonly ?bool $alphaMaskedTint = null
+        private readonly ?bool $alphaMaskedTint = null,
+        private readonly ?bool $packedBools = null
     ) {
     }
 
@@ -28,7 +29,8 @@ final class MaterialInstance {
             "ambient_occlusion" => $this->ambientOcclusion,
             "face_dimming" => $this->faceDimming,
             "isotropic" => $this->isotropic,
-            "alpha_masked_tint" => $this->alphaMaskedTint
+            "alpha_masked_tint" => $this->alphaMaskedTint,
+            "packed_bools" => $this->packedBools
         ], static fn(mixed $value): bool => $value !== null);
     }
 }

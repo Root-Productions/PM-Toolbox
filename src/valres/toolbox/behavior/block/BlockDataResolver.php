@@ -11,9 +11,12 @@ use valres\toolbox\behavior\block\component\DestructibleByExplosionComponent;
 use valres\toolbox\behavior\block\component\DestructibleByMiningComponent;
 use valres\toolbox\behavior\block\component\DisplayNameBlockComponent;
 use valres\toolbox\behavior\block\component\FrictionBlockComponent;
+use valres\toolbox\behavior\block\component\GeometryComponent;
+use valres\toolbox\behavior\block\component\ItemVisualComponent;
 use valres\toolbox\behavior\block\component\LightEmissionComponent;
 use valres\toolbox\behavior\block\component\MaterialInstancesComponent;
 use valres\toolbox\behavior\block\component\SelectionBoxComponent;
+use valres\toolbox\behavior\block\component\type\BlockVisual;
 use valres\toolbox\behavior\block\component\type\MaterialInstance;
 use valres\toolbox\behavior\block\component\type\OnPlayerPlacingComponent;
 use valres\toolbox\behavior\block\component\type\RenderMethod;
@@ -21,13 +24,19 @@ use valres\toolbox\behavior\block\component\type\RenderMethod;
 class BlockDataResolver {
     public static function applyDefault(BlockBuilder $builder): void {
         $block = $builder->getBlock();
+        $renderMethod = $block->isTransparent() ? RenderMethod::ALPHA_TEST_SINGLE_SIDED : RenderMethod::OPAQUE;
+        $material = new MaterialInstance(
+            $builder->getName(),
+            $renderMethod,
+            "none",
+            1.0,
+            true,
+            packedBools: false
+        );
 
-        $builder->addComponent(MaterialInstancesComponent::all(
-            new MaterialInstance(
-                $builder->getName(),
-                $block->isTransparent() ? RenderMethod::ALPHA_TEST : RenderMethod::OPAQUE
-            )
-        ));
+        $builder->addComponent(new GeometryComponent());
+        $builder->addComponent(MaterialInstancesComponent::all($material));
+        $builder->addComponent(new ItemVisualComponent(new BlockVisual("minecraft:geometry.full_block", ["*" => $material])));
         $builder->addComponent(new DisplayNameBlockComponent("tile." . $builder->getRuntimeId() . ".name"));
         $builder->addComponent(new OnPlayerPlacingComponent());
 

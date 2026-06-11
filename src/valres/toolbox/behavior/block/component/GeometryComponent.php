@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace valres\toolbox\behavior\block\component;
 
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\Tag;
 
 final class GeometryComponent extends BlockComponent {
     /** @param array<string, bool|string> $boneVisibility */
     public function __construct(
-        private readonly string $identifier,
-        private readonly ?string $culling = null,
-        private readonly ?string $cullingLayer = null,
-        private readonly bool|array|null $uvLock = null,
-        private readonly array $boneVisibility = []
+        private readonly string $identifier = "minecraft:geometry.full_block",
+        private readonly string $culling = "",
+        private readonly string $cullingLayer = "minecraft:culling_layer.undefined",
+        private readonly bool $uvLock = false,
+        private readonly array $boneVisibility = [],
+        private readonly bool $ignoreGeometryForIsSolid = true,
+        private readonly bool $needsLegacyTopRotation = false,
+        private readonly bool $useBlockTypeLightAbsorption = false
     ) {
     }
 
@@ -26,16 +30,15 @@ final class GeometryComponent extends BlockComponent {
     }
 
     public function toNBT(): Tag {
-        if ($this->culling === null && $this->cullingLayer === null && $this->uvLock === null && $this->boneVisibility === []) {
-            return ComponentNbtHelper::tag($this->identifier);
-        }
-
         return ComponentNbtHelper::compound([
+            "bone_visibility" => $this->boneVisibility === [] ? CompoundTag::create() : $this->boneVisibility,
             "identifier" => $this->identifier,
             "culling" => $this->culling,
             "culling_layer" => $this->cullingLayer,
             "uv_lock" => $this->uvLock,
-            "bone_visibility" => $this->boneVisibility === [] ? null : $this->boneVisibility
+            "ignoreGeometryForIsSolid" => $this->ignoreGeometryForIsSolid,
+            "needsLegacyTopRotation" => $this->needsLegacyTopRotation,
+            "useBlockTypeLightAbsorption" => $this->useBlockTypeLightAbsorption
         ]);
     }
 }

@@ -13,6 +13,7 @@ use valres\toolbox\behavior\block\AsyncBlockRegistrationStore;
 use valres\toolbox\behavior\block\BlockBuilder;
 use valres\toolbox\behavior\block\component\RawBlockComponent;
 use valres\toolbox\behavior\block\CustomBlockRegistry;
+use valres\toolbox\behavior\block\ExtraBlockComponentsInterface;
 use valres\toolbox\behavior\block\permutation\BlockPermutation;
 use valres\toolbox\behavior\block\property\BlockStateProperty;
 use valres\toolbox\behavior\block\traits\RawBlockTrait;
@@ -102,7 +103,11 @@ final class AsyncRegisterBlocksTask extends AsyncTask {
     }
 
     private static function preloadToolboxClasses(): void {
-        if (class_exists(BlockBuilder::class) && class_exists(CustomBlockRegistry::class)) {
+        if (
+            class_exists(BlockBuilder::class) &&
+            class_exists(CustomBlockRegistry::class) &&
+            interface_exists(ExtraBlockComponentsInterface::class)
+        ) {
             return;
         }
 
@@ -117,6 +122,7 @@ final class AsyncRegisterBlocksTask extends AsyncTask {
             "traits/RawBlockTrait.php",
             "BlockBuilder.php",
             "builder/BlockBuilder.php",
+            "ExtraBlockComponentsInterface.php",
             "BlockStateDictionaryMapper.php",
             "CustomBlockRegistry.php",
             "AsyncBlockRegistrationStore.php"
