@@ -9,26 +9,30 @@ use pocketmine\network\mcpe\protocol\ResourcePackStackPacket;
 use pocketmine\network\mcpe\protocol\StartGamePacket;
 use pocketmine\network\mcpe\protocol\types\Experiments;
 use valres\toolbox\behavior\block\BlockPaletteEntryMapper;
-use valres\toolbox\packet\attribute\IncomingPacket;
+use valres\toolbox\packet\attribute\OutgoingPacket;
 
 final class BehaviorInterceptor {
     private ?Experiments $experiments;
 
     public function __construct() {
         $this->experiments = new Experiments([
+            "data_driven_blocks" => true,
             "data_driven_items" => true
         ], true);
     }
 
-    #[IncomingPacket(StartGamePacket::class)]
+    #[OutgoingPacket(StartGamePacket::class)]
     public function onStartGame(StartGamePacket $pk, NetworkSession $session): bool {
         $pk->levelSettings->experiments = $this->experiments;
-        $pk->blockNetworkIdsAreHashes = true;
-        $pk->blockPalette = BlockPaletteEntryMapper::getInstance()->getEntries();
+        $entries = BlockPaletteEntryMapper::getInstance()->getEntries();
+        if ($entries !== []) {
+            $pk->blockNetworkIdsAreHashes = true;
+            $pk->blockPalette = $entries;
+        }
         return true;
     }
 
-    #[IncomingPacket(ResourcePackStackPacket::class)]
+    #[OutgoingPacket(ResourcePackStackPacket::class)]
     public function onResourcePackStack(ResourcePackStackPacket $pk, NetworkSession $session): bool {
         $pk->experiments = $this->experiments;
         return true;
