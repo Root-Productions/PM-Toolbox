@@ -176,8 +176,8 @@ final class CustomBlockRegistry {
         GlobalBlockStateHandlers::getSerializer()->map($block, $serializer);
         BlockStateDictionaryMapper::getInstance()->map($builder, $entries);
 
-        StringToItemParser::getInstance()->registerBlock($builder->getName(), fn () => clone $block);
-        StringToItemParser::getInstance()->registerBlock($runtimeId, fn () => clone $block);
+        $this->registerBlockParserAlias($builder->getName(), fn () => clone $block);
+        $this->registerBlockParserAlias($runtimeId, fn () => clone $block);
 
         $this->blocks[$runtimeId] = $builder;
     }
@@ -208,8 +208,8 @@ final class CustomBlockRegistry {
             CustomItemRegistry::getInstance()->deepRegister($builder->getItemBuilder());
         }
 
-        StringToItemParser::getInstance()->registerBlock($name, fn () => clone $block);
-        StringToItemParser::getInstance()->registerBlock($stringId, fn () => clone $block);
+        $this->registerBlockParserAlias($name, fn () => clone $block);
+        $this->registerBlockParserAlias($stringId, fn () => clone $block);
         LegacyItemIdToStringIdMap::getInstance()->add($name, 255 - $builder->getTypeId());
 
         $blockItemIdMap = BlockItemIdMap::getInstance();
@@ -270,5 +270,15 @@ final class CustomBlockRegistry {
     private function readCreativeInfo(object $object): ?CreativeInventoryInfo {
         $attributes = (new ReflectionClass($object))->getAttributes(CreativeInventoryInfo::class);
         return $attributes === [] ? null : $attributes[0]->newInstance();
+    }
+
+    private function registerBlockParserAlias(string $alias, \Closure $factory): void {
+        try {
+            StringToItemParser::getInstance()->registerBlock($alias, $factory);
+        } catch (InvalidArgumentException $exception) {
+            if (!str_contains($exception->getMessage(), "already registered")) {
+                throw $exception;
+            }
+        }
     }
 }
