@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace valres\toolbox\behavior\block\component\type;
 
+use pocketmine\nbt\tag\CompoundTag;
+
 final class BlockVisual {
     /**
      * @param string|array<string, mixed> $geometry
@@ -22,8 +24,11 @@ final class BlockVisual {
         }
 
         return [
-            "geometry" => $this->geometry,
-            "material_instances" => $materials
+            "geometryDescription" => is_array($this->geometry) ? $this->geometry : ["identifier" => $this->geometry],
+            "materialInstancesDescription" => [
+                "mappings" => CompoundTag::create(),
+                "materials" => $materials
+            ]
         ];
     }
 }

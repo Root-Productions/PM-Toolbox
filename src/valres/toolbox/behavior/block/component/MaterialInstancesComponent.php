@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace valres\toolbox\behavior\block\component;
 
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\block\component\type\MaterialInstance;
 
@@ -26,6 +27,8 @@ final class MaterialInstancesComponent extends BlockComponent {
             $instances[$name] = $instance instanceof MaterialInstance ? $instance->toArray() : $instance;
         }
 
-        return ComponentNbtHelper::tag($instances);
+        return CompoundTag::create()
+            ->setTag("mappings", CompoundTag::create())
+            ->setTag("materials", ComponentNbtHelper::compound($instances));
     }
 }

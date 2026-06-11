@@ -8,6 +8,7 @@ use Closure;
 use pocketmine\block\Block;
 use pocketmine\block\BlockTypeIds;
 use pocketmine\nbt\NBT;
+use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ListTag;
@@ -254,13 +255,18 @@ final class BlockBuilder {
                 array_map(fn (BlockTrait $trait) => $trait->toNBT(), $this->traits),
                 NBT::TAG_Compound
             ))
-            ->setTag("menu_category", CompoundTag::create())
+            ->setTag("menu_category", CompoundTag::create()
+                ->setTag("category", new StringTag("none"))
+                ->setTag("group", new StringTag("none"))
+                ->setTag("is_hidden_in_commands", new ByteTag(0))
+            )
             ->setTag("blockTags", new ListTag(
                 array_map(fn (string $tag) => new StringTag($tag), $this->tags),
                 NBT::TAG_String
             ))
             ->setTag("vanilla_block_data", CompoundTag::create()
                 ->setTag("block_id", new IntTag(BlockPaletteEntryMapper::getInstance()->nextRuntimeId()))
+                ->setTag("material", new StringTag("dirt"))
             )
             ->setTag("molangVersion", new IntTag(13));
     }

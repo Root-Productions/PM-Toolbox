@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace valres\toolbox\behavior\block\property;
 
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
 use valres\toolbox\behavior\block\component\ComponentNbtHelper;
 
@@ -29,8 +30,9 @@ final class BlockStateProperty {
     public function toNBT(): CompoundTag {
         return CompoundTag::create()
             ->setTag(self::TAG_NAME, new StringTag($this->name))
-            ->setTag(self::TAG_ENUM, ComponentNbtHelper::compoundList(
-                $this->values
-            ));
+            ->setTag(self::TAG_ENUM, new ListTag(array_map(
+                static fn(mixed $value) => ComponentNbtHelper::tag($value),
+                array_values($this->values)
+            )));
     }
 }

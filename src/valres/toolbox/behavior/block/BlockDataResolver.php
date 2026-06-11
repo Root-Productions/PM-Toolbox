@@ -22,12 +22,12 @@ class BlockDataResolver {
     public static function applyDefault(BlockBuilder $builder): void {
         $block = $builder->getBlock();
 
-        $builder->addComponent(new MaterialInstancesComponent([
+        $builder->addComponent(MaterialInstancesComponent::all(
             new MaterialInstance(
                 $builder->getName(),
                 $block->isTransparent() ? RenderMethod::ALPHA_TEST : RenderMethod::OPAQUE
             )
-        ]));
+        ));
         $builder->addComponent(new DisplayNameBlockComponent("tile." . $builder->getRuntimeId() . ".name"));
         $builder->addComponent(new OnPlayerPlacingComponent());
 
