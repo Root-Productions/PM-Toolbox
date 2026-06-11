@@ -51,6 +51,8 @@ final class AsyncRegisterBlocksTask extends AsyncTask {
 
     /** @throws ReflectionException|JsonException */
     public function onRun(): void {
+        self::preloadToolboxClasses();
+
         foreach ($this->blocks as $runtimeId => $blockFactory) {
             $block = $blockFactory();
             if (!$block instanceof Block) {
@@ -96,6 +98,33 @@ final class AsyncRegisterBlocksTask extends AsyncTask {
             }
 
             CustomBlockRegistry::getInstance()->registerWorker($builder);
+        }
+    }
+
+    private static function preloadToolboxClasses(): void {
+        if (class_exists(BlockBuilder::class) && class_exists(CustomBlockRegistry::class)) {
+            return;
+        }
+
+        $blockDirectory = dirname(__DIR__);
+        foreach ([
+            "component/BlockComponent.php",
+            "component/ComponentNbtHelper.php",
+            "component/RawBlockComponent.php",
+            "property/BlockStateProperty.php",
+            "permutation/BlockPermutation.php",
+            "traits/BlockTrait.php",
+            "traits/RawBlockTrait.php",
+            "BlockBuilder.php",
+            "builder/BlockBuilder.php",
+            "BlockStateDictionaryMapper.php",
+            "CustomBlockRegistry.php",
+            "AsyncBlockRegistrationStore.php"
+        ] as $file) {
+            $path = $blockDirectory . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $file);
+            if (is_file($path)) {
+                require_once $path;
+            }
         }
     }
 }
