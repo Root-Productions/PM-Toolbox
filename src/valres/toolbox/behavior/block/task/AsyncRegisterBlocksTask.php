@@ -13,12 +13,13 @@ use valres\toolbox\behavior\block\AsyncBlockRegistrationStore;
 use valres\toolbox\behavior\block\BlockBuilder;
 use valres\toolbox\behavior\block\component\RawBlockComponent;
 use valres\toolbox\behavior\block\CustomBlockRegistry;
-use valres\toolbox\behavior\block\ExtraBlockComponentsInterface;
 use valres\toolbox\behavior\block\permutation\BlockPermutation;
 use valres\toolbox\behavior\block\property\BlockStateProperty;
 use valres\toolbox\behavior\block\traits\RawBlockTrait;
 
 final class AsyncRegisterBlocksTask extends AsyncTask {
+    private string $autoloaderPath;
+
     private ThreadSafeArray $typeIds;
     private ThreadSafeArray $blocks;
     private ThreadSafeArray $properties;
@@ -29,6 +30,8 @@ final class AsyncRegisterBlocksTask extends AsyncTask {
     private ThreadSafeArray $deserializers;
 
     public function __construct(array $definitions) {
+        $this->autoloaderPath = self::findComposerAutoloader();
+
         $this->typeIds = new ThreadSafeArray();
         $this->blocks = new ThreadSafeArray();
         $this->properties = new ThreadSafeArray();
@@ -52,7 +55,7 @@ final class AsyncRegisterBlocksTask extends AsyncTask {
 
     /** @throws ReflectionException|JsonException */
     public function onRun(): void {
-        self::preloadToolboxClasses();
+        require_once $this->autoloaderPath;
 
         foreach ($this->blocks as $runtimeId => $blockFactory) {
             $block = $blockFactory();
@@ -102,35 +105,22 @@ final class AsyncRegisterBlocksTask extends AsyncTask {
         }
     }
 
-    private static function preloadToolboxClasses(): void {
-        if (
-            class_exists(BlockBuilder::class) &&
-            class_exists(CustomBlockRegistry::class) &&
-            interface_exists(ExtraBlockComponentsInterface::class)
-        ) {
-            return;
+    private static function findComposerAutoloader(): string {
+        $directory = __DIR__;
+        for ($i = 0; $i < 12; $i++) {
+            $path = $directory . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "autoload.php";
+            if (is_file($path)) {
+                return $path;
+            }
+
+            $parent = dirname($directory);
+            if ($parent === $directory) {
+                break;
+            }
+
+            $directory = $parent;
         }
 
-        $blockDirectory = dirname(__DIR__);
-        foreach ([
-            "component/BlockComponent.php",
-            "component/ComponentNbtHelper.php",
-            "component/RawBlockComponent.php",
-            "property/BlockStateProperty.php",
-            "permutation/BlockPermutation.php",
-            "traits/BlockTrait.php",
-            "traits/RawBlockTrait.php",
-            "BlockBuilder.php",
-            "builder/BlockBuilder.php",
-            "ExtraBlockComponentsInterface.php",
-            "BlockStateDictionaryMapper.php",
-            "CustomBlockRegistry.php",
-            "AsyncBlockRegistrationStore.php"
-        ] as $file) {
-            $path = $blockDirectory . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $file);
-            if (is_file($path)) {
-                require_once $path;
-            }
-        }
+        throw new \RuntimeException("Composer autoloader not found for async block registration.");
     }
 }
