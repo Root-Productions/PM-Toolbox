@@ -57,6 +57,31 @@ final class ComponentNbtHelper {
     }
 
     /**
+     * Converts a numeric array into a typed NBT list.
+     *
+     * @internal Low-level serialization helper for vector-like component payloads.
+     *
+     * @param  int[]|float[] $values
+     *
+     * @return ListTag
+     */
+    public static function numericList(array $values): ListTag {
+        $values = array_values($values);
+        $containsFloat = false;
+        foreach ($values as $value) {
+            if (is_float($value)) {
+                $containsFloat = true;
+                break;
+            }
+        }
+
+        return new ListTag(array_map(
+            static fn(int|float $value): IntTag|FloatTag => $containsFloat ? new FloatTag((float) $value) : new IntTag($value),
+            $values
+        ), $containsFloat ? NBT::TAG_Float : NBT::TAG_Int);
+    }
+
+    /**
      * Converts an array of associative arrays or CompoundTags into a compound NBT list.
      *
      * @internal Low-level serialization helper for item components and properties.
@@ -130,11 +155,32 @@ final class ComponentNbtHelper {
         }
 
         $first = $values[0];
-        if (is_string($first)) {
+        if (is_string($first) && self::all($values, "is_string")) {
             return self::stringList($values);
         }
 
+        if ((is_int($first) || is_float($first)) && self::all($values, static fn(mixed $value): bool => is_int($value) || is_float($value))) {
+            return self::numericList($values);
+        }
+
+        if (is_bool($first) && self::all($values, "is_bool")) {
+            return new ListTag(array_map(
+                static fn(bool $value): ByteTag => new ByteTag($value ? 1 : 0),
+                $values
+            ), NBT::TAG_Byte);
+        }
+
         return self::compoundList($values);
+    }
+
+    private static function all(array $values, callable $predicate): bool {
+        foreach ($values as $value) {
+            if (!$predicate($value)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static function normalizeValue(mixed $value): mixed {
