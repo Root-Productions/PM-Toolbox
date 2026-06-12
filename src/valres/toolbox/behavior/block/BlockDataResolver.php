@@ -17,6 +17,7 @@ use valres\toolbox\behavior\block\component\LightEmissionComponent;
 use valres\toolbox\behavior\block\component\MaterialInstancesComponent;
 use valres\toolbox\behavior\block\component\SelectionBoxComponent;
 use valres\toolbox\behavior\block\component\type\BlockVisual;
+use valres\toolbox\behavior\block\component\type\ConnectionRuleMode;
 use valres\toolbox\behavior\block\component\type\MaterialInstance;
 use valres\toolbox\behavior\block\component\type\OnPlayerPlacingComponent;
 use valres\toolbox\behavior\block\component\type\RenderMethod;
@@ -52,7 +53,7 @@ class BlockDataResolver {
         }
 
         if ($block instanceof Flowable) {
-            $builder->addComponent(new ConnectionRuleComponent());
+            $builder->addComponent(new ConnectionRuleComponent(ConnectionRuleMode::NONE));
         }
 
         if ($block instanceof ExtraBlockComponentsInterface) {
