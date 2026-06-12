@@ -6,6 +6,8 @@ namespace valres\toolbox\behavior\item;
 
 use Closure;
 use InvalidArgumentException;
+use pocketmine\block\Block;
+use pocketmine\data\bedrock\item\BlockItemIdMap;
 use pocketmine\data\bedrock\item\SavedItemData;
 use pocketmine\data\bedrock\item\upgrade\LegacyItemIdToStringIdMap;
 use pocketmine\item\Item;
@@ -14,7 +16,9 @@ use pocketmine\network\mcpe\protocol\types\CacheableNbt;
 use pocketmine\network\mcpe\protocol\types\ItemTypeEntry;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\world\format\io\GlobalItemDataHandlers;
+use ReflectionClass;
 use ReflectionException;
+use valres\toolbox\behavior\block\CustomBlockRegistry;
 use valres\toolbox\behavior\creative\CreativeInventoryManager;
 use valres\toolbox\behavior\exception\ItemRegistryException;
 use valres\toolbox\behavior\item\builder\DataDrivenItemBuilder;
@@ -185,10 +189,35 @@ final class CustomItemRegistry {
         }
         $this->registerItemParserAlias($identifier, fn () => clone $item);
         LegacyItemIdToStringIdMap::getInstance()->add($legacyIdentifier, $item->getTypeId());
+        $this->mapBlockItem($builder);
 
         $this->items[$runtimeId] = $builder;
         $this->typeIds[$typeId] = $runtimeId;
         CreativeInventoryManager::getInstance()->addToCreative($item);
+    }
+
+    private function mapBlockItem(ItemBuilder $builder): void {
+        $item = $builder->getItem();
+        if (!method_exists($item, "getBlock")) {
+            return;
+        }
+
+        $block = $item->getBlock();
+        if (!$block instanceof Block) {
+            return;
+        }
+
+        $blockBuilder = CustomBlockRegistry::getInstance()->getByBlock($block);
+        if ($blockBuilder === null) {
+            return;
+        }
+
+        $blockItemIdMap = BlockItemIdMap::getInstance();
+        $reflection = new ReflectionClass($blockItemIdMap);
+        $itemToBlockId = $reflection->getProperty("itemToBlockId");
+        /** @var string[] $value */
+        $value = $itemToBlockId->getValue($blockItemIdMap);
+        $itemToBlockId->setValue($blockItemIdMap, $value + [$builder->getRuntimeId() => $blockBuilder->getRuntimeId()]);
     }
 
     private function validateRuntimeId(string $runtimeId): void {

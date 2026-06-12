@@ -32,13 +32,8 @@ use valres\toolbox\behavior\attribute\CreativeInventoryInfo;
 use valres\toolbox\behavior\block\task\AsyncRegisterBlocksTask;
 use valres\toolbox\behavior\creative\CreativeInventoryManager;
 use valres\toolbox\behavior\exception\BlockRegistryException;
-use valres\toolbox\behavior\exception\ItemRegistryException;
-use valres\toolbox\behavior\item\CustomItemRegistry;
 use valres\toolbox\behavior\item\ItemFormatEnum;
 use valres\toolbox\behavior\item\ItemTypeDictionaryMapper;
-use valres\toolbox\behavior\item\builder\DataDrivenItemBuilder;
-use valres\toolbox\behavior\item\builder\ItemBuilder;
-use valres\toolbox\behavior\item\component\BlockPlacerItemComponent;
 use valres\toolbox\ToolboxLoader;
 
 final class CustomBlockRegistry {
@@ -53,7 +48,7 @@ final class CustomBlockRegistry {
      * Registers a custom block and all associated network/runtime mappings.
      * The closure may either accept the allocated block type id or no parameter.
      *
-     * @throws BlockRegistryException|ReflectionException|ItemRegistryException
+     * @throws BlockRegistryException|ReflectionException
      */
     public function register(string $runtimeId, Closure $blockClosure): BlockBuilder {
         $typeId = BlockTypeIds::newId();
@@ -75,7 +70,7 @@ final class CustomBlockRegistry {
     /**
      * Registers an already configured block builder.
      *
-     * @throws BlockRegistryException|ReflectionException|ItemRegistryException
+     * @throws BlockRegistryException|ReflectionException
      */
     public function registerBuilder(BlockBuilder $builder): void {
         $this->deepRegister($builder);
@@ -185,7 +180,7 @@ final class CustomBlockRegistry {
         $this->blocks[$runtimeId] = $builder;
     }
 
-    /** @throws BlockRegistryException|ReflectionException|ItemRegistryException */
+    /** @throws BlockRegistryException|ReflectionException */
     private function registerBlockItem(BlockBuilder $builder): void {
         $block = $builder->getBlock();
         $item = $block->asItem();
@@ -207,11 +202,6 @@ final class CustomBlockRegistry {
 
             GlobalItemDataHandlers::getDeserializer()->map($stringId, fn(SavedItemData $data) => clone $item);
             GlobalItemDataHandlers::getSerializer()->map($item, fn() => new SavedItemData($stringId));
-            $registeredItem = $item;
-        } else {
-            $itemBuilder = $builder->getItemBuilder();
-            $this->registerCustomBlockItem($itemBuilder, $builder);
-            $registeredItem = $itemBuilder->getItem();
         }
 
         $this->registerBlockParserAlias($name, fn () => clone $block);
@@ -226,44 +216,28 @@ final class CustomBlockRegistry {
         $value = $itemToBlockId->getValue($blockItemIdMap);
         $itemToBlockId->setValue($blockItemIdMap, $value + [$stringId => $stringId]);
 
-        $creativeInfo = $this->readCreativeInfo($block) ?? $this->readCreativeInfo($registeredItem) ?? $this->readCreativeInfo($item);
+        $creativeInfo = $this->readCreativeInfo($block) ?? $this->readCreativeInfo($item);
         if ($creativeInfo !== null && !$creativeInfo->isHidden()) {
             CreativeInventoryManager::getInstance()->add(
-                $registeredItem,
+                $item,
                 $creativeInfo->getCategory() ?? CreativeCategory::ITEMS,
                 $creativeInfo->getGroup()
             );
         }
     }
 
-    private function registerCustomBlockItem(ItemBuilder $builder, ?BlockBuilder $blockBuilder = null): void {
-        $item = $builder->getItem();
-        $runtimeId = $builder->getRuntimeId();
+    public function get(string $runtimeId): ?BlockBuilder {
+        return $this->blocks[$runtimeId] ?? null;
+    }
 
-        CustomItemRegistry::getInstance()->applyItemComponents($builder);
-        if ($builder instanceof DataDrivenItemBuilder) {
-            if (!$builder->hasComponent(BlockPlacerItemComponent::identifier()) && $blockBuilder !== null) {
-                $builder->addComponent(BlockPlacerItemComponent::from($blockBuilder->getBlock()));
+    public function getByBlock(Block $block): ?BlockBuilder {
+        foreach ($this->blocks as $builder) {
+            if ($builder->getBlock()->getTypeId() === $block->getTypeId()) {
+                return $builder;
             }
         }
 
-        GlobalItemDataHandlers::getDeserializer()
-            ->map($runtimeId, fn(SavedItemData $data) => clone $item);
-        GlobalItemDataHandlers::getSerializer()
-            ->map($item, fn() => new SavedItemData($runtimeId));
-
-        $numericId = $builder->getTypeId() < 0 ? 255 - $builder->getTypeId() : $builder->getTypeId();
-        ItemTypeDictionaryMapper::getInstance()->map($builder, new ItemTypeEntry(
-            $runtimeId,
-            $numericId,
-            ($builder::getFormat() === ItemFormatEnum::DATA_DRIVEN),
-            $builder::getFormat()->value,
-            new CacheableNbt($builder->toNBT())
-        ));
-    }
-
-    public function get(string $runtimeId): ?BlockBuilder {
-        return $this->blocks[$runtimeId] ?? null;
+        return null;
     }
 
     /**
