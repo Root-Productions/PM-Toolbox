@@ -51,15 +51,21 @@ final class CustomBlockRegistry {
      * @throws BlockRegistryException|ReflectionException
      */
     public function register(string $runtimeId, Closure $blockClosure): BlockBuilder {
-        $typeId = BlockTypeIds::newId();
+        $reflection = new ReflectionFunction($blockClosure);
+        $typeId = $reflection->getNumberOfParameters() > 0 ? BlockTypeIds::newId() : null;
         $block = $this->createBlock($blockClosure, $typeId);
         if (!$block instanceof Block) {
             throw new BlockRegistryException("Block closure must return a Block.");
         }
 
+        $registeredTypeId = $block->getTypeId() > 0 ? $block->getTypeId() : $typeId;
+        if ($registeredTypeId === null) {
+            throw new BlockRegistryException("Block closure without a type ID parameter must return a Block with a valid type ID.");
+        }
+
         $builder = BlockBuilder::create($block)
             ->setRuntimeId($runtimeId)
-            ->setTypeId($block->getTypeId() > 0 ? $block->getTypeId() : $typeId)
+            ->setTypeId($registeredTypeId)
             ->setBlockFactory($this->createBlockFactory($blockClosure, $typeId));
 
         $this->deepRegister($builder);
@@ -261,14 +267,12 @@ final class CustomBlockRegistry {
         }
     }
 
-    private function createBlock(Closure $blockClosure, int $typeId): mixed {
-        $reflection = new ReflectionFunction($blockClosure);
-        return $reflection->getNumberOfParameters() > 0 ? $blockClosure($typeId) : $blockClosure();
+    private function createBlock(Closure $blockClosure, ?int $typeId): mixed {
+        return $typeId !== null ? $blockClosure($typeId) : $blockClosure();
     }
 
-    private function createBlockFactory(Closure $blockClosure, int $typeId): Closure {
-        $reflection = new ReflectionFunction($blockClosure);
-        return $reflection->getNumberOfParameters() > 0
+    private function createBlockFactory(Closure $blockClosure, ?int $typeId): Closure {
+        return $typeId !== null
             ? static fn() => $blockClosure($typeId)
             : static fn() => $blockClosure();
     }
