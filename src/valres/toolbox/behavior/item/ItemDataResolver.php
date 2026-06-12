@@ -25,6 +25,7 @@ use pocketmine\item\Tool;
 use valres\toolbox\behavior\exception\ItemRegistryException;
 use valres\toolbox\behavior\item\builder\DataDrivenItemBuilder;
 use valres\toolbox\behavior\item\builder\ItemBuilder;
+use valres\toolbox\behavior\item\builder\LegacyItemBuilder;
 use valres\toolbox\behavior\item\component\BlockPlacerItemComponent;
 use valres\toolbox\behavior\item\component\DisplayNameComponent;
 use valres\toolbox\behavior\item\component\DurabilityComponent;
@@ -33,6 +34,9 @@ use valres\toolbox\behavior\item\component\EnchantableComponent;
 use valres\toolbox\behavior\item\component\FireResistantComponent;
 use valres\toolbox\behavior\item\component\FoodComponent;
 use valres\toolbox\behavior\item\component\FuelComponent;
+use valres\toolbox\behavior\item\component\HandEquippedComponent;
+use valres\toolbox\behavior\item\component\MaxStackSizeComponent;
+use valres\toolbox\behavior\item\component\StackByDataComponent;
 use valres\toolbox\behavior\item\component\WearableItemComponent;
 use valres\toolbox\behavior\item\property\BlockProperty;
 use valres\toolbox\behavior\item\property\CanDestroyInCreativeProperty;
@@ -59,12 +63,28 @@ class ItemDataResolver {
      * @return void
      */
     public static function applyDefault(ItemBuilder $builder): void {
+        if ($builder instanceof LegacyItemBuilder) {
+            self::applyLegacyComponents($builder);
+            return;
+        }
+
         if (!$builder instanceof DataDrivenItemBuilder) {
             return;
         }
 
         self::applyDataDrivenProperties($builder);
         self::applyDataDrivenComponents($builder);
+    }
+
+    /**
+     * @throws ItemRegistryException
+     */
+    private static function applyLegacyComponents(LegacyItemBuilder $builder): void {
+        $item = $builder->getItem();
+
+        $builder->addComponent(new MaxStackSizeComponent($item->getMaxStackSize()));
+        $builder->addComponent(new StackByDataComponent(false));
+        $builder->addComponent(new HandEquippedComponent($item instanceof Tool));
     }
 
     /**

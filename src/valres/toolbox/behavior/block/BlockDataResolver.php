@@ -20,6 +20,7 @@ use valres\toolbox\behavior\block\component\type\BlockVisual;
 use valres\toolbox\behavior\block\component\type\MaterialInstance;
 use valres\toolbox\behavior\block\component\type\OnPlayerPlacingComponent;
 use valres\toolbox\behavior\block\component\type\RenderMethod;
+use valres\toolbox\behavior\block\vanilla\VanillaBlockRegistration;
 
 class BlockDataResolver {
     public static function applyDefault(BlockBuilder $builder): void {
@@ -59,6 +60,6 @@ class BlockDataResolver {
             $block->defineBlockComponents($builder);
         }
 
-        BlockPermutationResolver::applyDefault($builder);
+        VanillaBlockRegistration::apply($builder);
     }
 }
