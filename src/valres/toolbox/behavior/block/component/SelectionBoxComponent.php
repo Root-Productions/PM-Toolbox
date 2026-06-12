@@ -20,6 +20,14 @@ final class SelectionBoxComponent extends BlockComponent {
     }
 
     public function toNBT(): Tag {
-        return ComponentNbtHelper::tag($this->value instanceof BlockBox ? $this->value->toArray() : $this->value);
+        if (!$this->value instanceof BlockBox) {
+            if (!$this->value) {
+                return ComponentNbtHelper::compound(["enabled" => false]);
+            }
+
+            return ComponentNbtHelper::compound(BlockBox::cube()->toArray() + ["enabled" => true]);
+        }
+
+        return ComponentNbtHelper::compound($this->value->toArray() + ["enabled" => true]);
     }
 }

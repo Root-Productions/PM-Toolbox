@@ -8,11 +8,9 @@ use pocketmine\block\Crops;
 use pocketmine\data\bedrock\block\BlockStateNames;
 use pocketmine\data\bedrock\block\convert\BlockStateReader;
 use pocketmine\data\bedrock\block\convert\BlockStateWriter;
-use valres\toolbox\behavior\block\component\CollisionBoxComponent;
 use valres\toolbox\behavior\block\component\GeometryComponent;
 use valres\toolbox\behavior\block\component\MaterialInstancesComponent;
 use valres\toolbox\behavior\block\component\SelectionBoxComponent;
-use valres\toolbox\behavior\block\component\type\BlockBox;
 use valres\toolbox\behavior\block\component\type\MaterialInstance;
 use valres\toolbox\behavior\block\component\type\RenderMethod;
 use valres\toolbox\behavior\block\permutation\BlockPermutation;
@@ -31,14 +29,12 @@ class PermutationsResolver {
             $builder->addComponent(new GeometryComponent("geometry.crop"));
 
             foreach ($ages as $age) {
-                $height = (($age + 1.0) / ($block::MAX_AGE + 1.0)) * 0.7 * 16.0;
-                $box = new BlockBox([-8.0, 0.0, -8.0], [16.0, $height, 16.0]);
+                $height = (($age + 1.0) * (1 / $block::MAX_AGE)) * 0.7 * 16;
                 $permutation = new BlockPermutation("q.block_state('{$stateName}') == {$age}");
                 $permutation->addComponent(MaterialInstancesComponent::all(
                     new MaterialInstance($builder->getName() . "_{$age}", RenderMethod::ALPHA_TEST)
                 ));
                 $permutation->addComponent(SelectionBoxComponent::box([-8.0, 0.0, -8.0], [16.0, $height, 16.0]));
-                $permutation->addComponent(new CollisionBoxComponent($box));
                 $builder->addPermutation($permutation);
             }
 
