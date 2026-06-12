@@ -42,7 +42,7 @@ class BlockDataResolver {
         $builder->addComponent(new OnPlayerPlacingComponent());
 
         $builder->addComponent(new CollisionBoxComponent(!empty($block->getCollisionBoxes())));
-        $builder->addComponent(new SelectionBoxComponent());
+        $builder->addComponent(new SelectionBoxComponent(true));
 
         $builder->addComponent(new DestructibleByExplosionComponent($block->getBreakInfo()->getBlastResistance()));
         $builder->addComponent(new DestructibleByMiningComponent($block->getBreakInfo()->getHardness() * 3.33334));

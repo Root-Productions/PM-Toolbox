@@ -29,7 +29,6 @@ class PermutationsResolver {
 
             $builder->addProperty(new BlockStateProperty($stateName, $ages));
             $builder->addComponent(new GeometryComponent("geometry.crop"));
-            $builder->removeComponent(CollisionBoxComponent::identifier());
 
             foreach ($ages as $age) {
                 $height = (($age + 1.0) * (1 / $block::MAX_AGE)) * 0.7 * 16;
