@@ -8,6 +8,7 @@ use pocketmine\block\Crops;
 use pocketmine\data\bedrock\block\BlockStateNames;
 use pocketmine\data\bedrock\block\convert\BlockStateReader;
 use pocketmine\data\bedrock\block\convert\BlockStateWriter;
+use valres\toolbox\behavior\block\component\CollisionBoxComponent;
 use valres\toolbox\behavior\block\component\GeometryComponent;
 use valres\toolbox\behavior\block\component\MaterialInstancesComponent;
 use valres\toolbox\behavior\block\component\SelectionBoxComponent;
@@ -27,6 +28,8 @@ class PermutationsResolver {
 
             $builder->addProperty(new BlockStateProperty($stateName, $ages));
             $builder->addComponent(new GeometryComponent("geometry.crop"));
+
+            $builder->addComponent(new CollisionBoxComponent(false));
 
             foreach ($ages as $age) {
                 $height = (($age + 1.0) * (1 / $block::MAX_AGE)) * 0.7 * 16;
