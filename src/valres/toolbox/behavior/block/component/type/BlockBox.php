@@ -15,6 +15,23 @@ final class BlockBox {
         return new self([-8, 0, -8], [16, 16, 16]);
     }
 
+    public function toCollisionArray(): array {
+        $origin = array_values($this->origin);
+        $size = array_values($this->size);
+        $minX = 8 + $origin[0];
+        $minY = $origin[1];
+        $minZ = 8 + $origin[2];
+
+        return [
+            "minX" => $minX,
+            "minY" => $minY,
+            "minZ" => $minZ,
+            "maxX" => $minX + $size[0],
+            "maxY" => $minY + $size[1],
+            "maxZ" => $minZ + $size[2]
+        ];
+    }
+
     public function toArray(): array {
         return [
             "origin" => $this->origin,
