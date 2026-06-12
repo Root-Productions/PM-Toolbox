@@ -37,7 +37,7 @@ class PermutationsResolver {
                 $permutation->addComponent(MaterialInstancesComponent::all(
                     new MaterialInstance($builder->getName() . "_{$age}", RenderMethod::ALPHA_TEST)
                 ));
-                $permutation->addComponent(new SelectionBoxComponent($box));
+                $permutation->addComponent(SelectionBoxComponent::box([-8.0, 0.0, -8.0], [16.0, $height, 16.0]));
                 $permutation->addComponent(new CollisionBoxComponent($box));
                 $builder->addPermutation($permutation);
             }
