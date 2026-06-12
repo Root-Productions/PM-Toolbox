@@ -58,5 +58,7 @@ class BlockDataResolver {
         if ($block instanceof ExtraBlockComponentsInterface) {
             $block->defineBlockComponents($builder);
         }
+
+        BlockPermutationResolver::applyDefault($builder);
     }
 }

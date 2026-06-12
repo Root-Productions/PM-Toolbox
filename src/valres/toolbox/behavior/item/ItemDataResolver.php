@@ -90,14 +90,7 @@ class ItemDataResolver {
             $builder->addProperty(new DamageProperty($item->getAttackPoints() - 1));
         }
 
-        if (method_exists($item, "getBlock")) {
-            $block = $item->getBlock();
-            if (!$block instanceof Air) {
-                $builder->addProperty(BlockProperty::from($block));
-            }
-        }
-
-        if ($item instanceof Food || $item instanceof Consumable) {
+        if ($item instanceof Consumable) {
             $builder->addProperty(new UseDurationProperty(20));
         }
 
@@ -170,7 +163,7 @@ class ItemDataResolver {
             return UseAnimationProperty::DRINK;
         }
 
-        if ($item instanceof Food || $item instanceof Consumable) {
+        if ($item instanceof Food) {
             return UseAnimationProperty::EAT;
         }
 

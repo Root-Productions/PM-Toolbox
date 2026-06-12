@@ -178,6 +178,16 @@ final class BlockBuilder {
         return $this->properties;
     }
 
+    public function hasProperty(string $name): bool {
+        foreach ($this->properties as $property) {
+            if ($property->getName() === $name) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function addProperty(BlockStateProperty $property): self {
         $this->properties[] = $property;
         return $this;
