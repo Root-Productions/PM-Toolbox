@@ -92,6 +92,7 @@ final class CustomBlockRegistry {
         }
 
         BlockDataResolver::applyDefault($builder);
+        PermutationsResolver::resolve($builder);
 
         $serializer = $builder->getSerializer() ?? static fn () => new BlockStateWriter($runtimeId);
         $deserializer = $builder->getDeserializer() ?? static fn (BlockStateReader $in) => clone $block;
