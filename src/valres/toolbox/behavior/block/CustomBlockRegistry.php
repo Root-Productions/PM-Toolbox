@@ -17,6 +17,7 @@ use pocketmine\data\bedrock\item\upgrade\LegacyItemIdToStringIdMap;
 use pocketmine\inventory\CreativeCategory;
 use pocketmine\item\ItemBlock;
 use pocketmine\item\StringToItemParser;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\types\BlockPaletteEntry;
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
 use pocketmine\network\mcpe\protocol\types\ItemTypeEntry;
@@ -31,10 +32,7 @@ use valres\toolbox\behavior\attribute\CreativeInventoryInfo;
 use valres\toolbox\behavior\block\task\AsyncRegisterBlocksTask;
 use valres\toolbox\behavior\creative\CreativeInventoryManager;
 use valres\toolbox\behavior\exception\BlockRegistryException;
-use valres\toolbox\behavior\item\builder\DataDrivenItemBuilder;
-use valres\toolbox\behavior\item\ItemDataResolver;
 use valres\toolbox\behavior\item\ItemFormatEnum;
-use valres\toolbox\behavior\item\property\BlockProperty;
 use valres\toolbox\behavior\item\ItemTypeDictionaryMapper;
 use valres\toolbox\ToolboxLoader;
 
@@ -266,19 +264,12 @@ final class CustomBlockRegistry {
         $stringId = $builder->getRuntimeId();
 
         if ($item instanceof ItemBlock) {
-            $itemBuilder = DataDrivenItemBuilder::create($item)
-                ->setRuntimeId($stringId)
-                ->setTypeId($block->getTypeId());
-
-            ItemDataResolver::applyDefault($itemBuilder);
-            $itemBuilder->addProperty(BlockProperty::from($block));
-
             ItemTypeDictionaryMapper::getInstance()->registerEntry(new ItemTypeEntry(
                 $stringId,
                 $block->getTypeId(),
-                true,
-                ItemFormatEnum::DATA_DRIVEN->value,
-                new CacheableNbt($itemBuilder->toNBT())
+                false,
+                ItemFormatEnum::NONE->value,
+                new CacheableNbt(CompoundTag::create())
             ));
 
             GlobalItemDataHandlers::getDeserializer()->map($stringId, fn(SavedItemData $data) => clone $item);
