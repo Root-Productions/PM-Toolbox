@@ -289,13 +289,15 @@ final class CustomBlockRegistry {
         $itemToBlockId->setValue($blockItemIdMap, $value + [$stringId => $stringId]);
 
         $creativeInfo = $this->readCreativeInfo($block) ?? $this->readCreativeInfo($item);
-        if ($creativeInfo !== null && !$creativeInfo->isHidden()) {
-            CreativeInventoryManager::getInstance()->add(
-                $item,
-                $creativeInfo->getCategory() ?? CreativeCategory::ITEMS,
-                $creativeInfo->getGroup()
-            );
+        if ($creativeInfo?->isHidden() === true) {
+            return;
         }
+
+        CreativeInventoryManager::getInstance()->add(
+            $item,
+            $creativeInfo?->getCategory() ?? CreativeCategory::CONSTRUCTION,
+            $creativeInfo?->getGroup()
+        );
     }
 
     public function get(string $runtimeId): ?BlockBuilder {

@@ -50,11 +50,11 @@ final class CreativeInventoryManager {
 
     public function addToCreative(Item $item): void {
         $info = $this->readCreativeInfo($item);
-        if ($info === null || $info->isHidden()) {
+        if ($info?->isHidden() === true) {
             return;
         }
 
-        $this->add($item, $info->getCategory() ?? CreativeCategory::ITEMS, $info->getGroup());
+        $this->add($item, $info?->getCategory() ?? CreativeCategory::ITEMS, $info?->getGroup());
     }
 
     public function add(Item $item, CreativeCategory $category = CreativeCategory::ITEMS, CreativeGroupEnum|string|null $groupName = null): void {
