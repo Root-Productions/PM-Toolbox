@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace valres\toolbox\task;
 
 use Closure;
-use Generator;
 use valres\toolbox\task\internal\AfterTask;
 use valres\toolbox\task\internal\EveryTask;
-use valres\toolbox\task\internal\GeneratorTask;
 use valres\toolbox\task\internal\RepeatTask;
 use valres\toolbox\ToolboxLoader;
 
@@ -33,15 +31,6 @@ final class Tasks {
         }
 
         ToolboxLoader::getLoader()->getScheduler()->scheduleRepeatingTask(new RepeatTask($handle, $times, $callback), max(1, $intervalTicks));
-        return $handle;
-    }
-
-    public static function generator(Generator $generator, int $stepsPerTick = 1, int $intervalTicks = 1, ?Closure $onComplete = null): TaskHandle {
-        $handle = new TaskHandle();
-        ToolboxLoader::getLoader()->getScheduler()->scheduleRepeatingTask(
-            new GeneratorTask($handle, $generator, max(1, $stepsPerTick), $onComplete),
-            max(1, $intervalTicks)
-        );
         return $handle;
     }
 }

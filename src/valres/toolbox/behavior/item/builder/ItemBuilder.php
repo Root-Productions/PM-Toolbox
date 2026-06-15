@@ -24,8 +24,6 @@ abstract class ItemBuilder {
     private ?Closure $serializer = null;
     private ?Closure $deserializer = null;
 
-    private ?CompoundTag $nbtCache = null;
-
     public function __construct(Item $item) {
         $this->item = $item;
     }
@@ -63,7 +61,6 @@ abstract class ItemBuilder {
      */
     public function setItem(Item $item): void {
         $this->item = $item;
-        $this->invalidateNbtCache();
     }
 
     public function getRuntimeId(): string {
@@ -79,7 +76,6 @@ abstract class ItemBuilder {
      */
     public function setRuntimeId(string $runtimeId): self {
         $this->runtimeId = $runtimeId;
-        $this->invalidateNbtCache();
         return $this;
     }
 
@@ -96,7 +92,6 @@ abstract class ItemBuilder {
      */
     public function setTypeId(int $typeId): self {
         $this->typeId = $typeId;
-        $this->invalidateNbtCache();
         return $this;
     }
 
@@ -116,17 +111,5 @@ abstract class ItemBuilder {
      */
     public function getSerializer(): ?Closure {
         return $this->serializer;
-    }
-
-    protected function cachedNbt(Closure $builder): CompoundTag {
-        if ($this->nbtCache === null) {
-            $this->nbtCache = $builder();
-        }
-
-        return clone $this->nbtCache;
-    }
-
-    protected function invalidateNbtCache(): void {
-        $this->nbtCache = null;
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace valres\toolbox\behavior\item;
 
 use Closure;
-use Generator;
 use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\data\bedrock\item\BlockItemIdMap;
@@ -25,8 +24,6 @@ use valres\toolbox\behavior\exception\ItemRegistryException;
 use valres\toolbox\behavior\item\builder\DataDrivenItemBuilder;
 use valres\toolbox\behavior\item\builder\ItemBuilder;
 use valres\toolbox\behavior\item\builder\LegacyItemBuilder;
-use valres\toolbox\task\TaskHandle;
-use valres\toolbox\task\Tasks;
 
 final class CustomItemRegistry {
     use SingletonTrait;
@@ -85,76 +82,12 @@ final class CustomItemRegistry {
     }
 
     /**
-     * Schedules registry loading over multiple ticks to reduce startup stalls.
-     *
-     * @param  class-string $registryClass
-     * @param  string       $namespace
-     * @param  Closure|null $runtimeIdResolver function(string $name, Item $item, string $namespace): string
-     * @param  int          $itemsPerTick
-     * @param  int          $intervalTicks
-     * @param  Closure|null $onComplete
-     *
-     * @return TaskHandle
-     */
-    public static function registerAllBatched(
-        string $registryClass,
-        string $namespace,
-        ?Closure $runtimeIdResolver = null,
-        int $itemsPerTick = 10,
-        int $intervalTicks = 1,
-        ?Closure $onComplete = null
-    ): TaskHandle {
-        return self::getInstance()->registerAllFromBatched(
-            $registryClass,
-            $namespace,
-            $runtimeIdResolver,
-            $itemsPerTick,
-            $intervalTicks,
-            $onComplete
-        );
-    }
-
-    /**
      * @param  class-string $registryClass
      * @param  Closure|null $runtimeIdResolver function(string $name, Item $item, string $namespace): string
      *
      * @throws ItemRegistryException|ReflectionException
      */
     public function registerAllFrom(string $registryClass, string $namespace, ?Closure $runtimeIdResolver = null): int {
-        $registered = 0;
-        foreach ($this->registerAllFromGenerator($registryClass, $namespace, $runtimeIdResolver) as $registered) {
-        }
-
-        return $registered;
-    }
-
-    /**
-     * @param  class-string $registryClass
-     * @param  Closure|null $runtimeIdResolver function(string $name, Item $item, string $namespace): string
-     */
-    public function registerAllFromBatched(
-        string $registryClass,
-        string $namespace,
-        ?Closure $runtimeIdResolver = null,
-        int $itemsPerTick = 10,
-        int $intervalTicks = 1,
-        ?Closure $onComplete = null
-    ): TaskHandle {
-        return Tasks::generator(
-            $this->registerAllFromGenerator($registryClass, $namespace, $runtimeIdResolver),
-            $itemsPerTick,
-            $intervalTicks,
-            $onComplete
-        );
-    }
-
-    /**
-     * @param  class-string $registryClass
-     * @param  Closure|null $runtimeIdResolver function(string $name, Item $item, string $namespace): string
-     *
-     * @return Generator<int, int>
-     */
-    public function registerAllFromGenerator(string $registryClass, string $namespace, ?Closure $runtimeIdResolver = null): Generator {
         if (!class_exists($registryClass)) {
             throw new ItemRegistryException("Item registry class '" . $registryClass . "' does not exist.");
         }
@@ -180,7 +113,6 @@ final class CustomItemRegistry {
 
             $this->register($runtimeId, static fn () => clone $item);
             ++$registered;
-            yield $registered;
         }
 
         return $registered;
