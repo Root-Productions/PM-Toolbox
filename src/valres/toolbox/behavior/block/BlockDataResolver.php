@@ -40,7 +40,7 @@ class BlockDataResolver {
         $builder->addComponent(MaterialInstancesComponent::all($material));
         $builder->addComponent(new ItemVisualComponent(new BlockVisual("minecraft:geometry.full_block", ["*" => $material])));
         $builder->addComponent(new DisplayNameBlockComponent("tile." . $builder->getRuntimeId() . ".name"));
-        $builder->addComponent(new OnPlayerPlacingComponent());
+        //$builder->addComponent(new OnPlayerPlacingComponent());
 
         $builder->addComponent(new CollisionBoxComponent(!$block->isTransparent() || !empty($block->getCollisionBoxes())));
         $builder->addComponent(new SelectionBoxComponent(true));
