@@ -21,7 +21,7 @@ final class DestructibleByMiningComponent extends BlockComponent {
 
     public function toNBT(): Tag {
         return ComponentNbtHelper::tag(is_bool($this->value) ? $this->value : [
-            "seconds_to_destroy" => $this->value
+            "seconds_to_destroy" => (float) $this->value
         ]);
     }
 }
