@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace valres\toolbox\behavior\block\component;
 
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\block\component\ComponentNbtHelper;
 
@@ -20,8 +22,7 @@ final class DestructibleByMiningComponent extends BlockComponent {
     }
 
     public function toNBT(): Tag {
-        return ComponentNbtHelper::tag(is_bool($this->value) ? $this->value : [
-            "seconds_to_destroy" => (float) $this->value
-        ]);
+        return is_bool($this->value) ? ComponentNbtHelper::tag($this->value) : CompoundTag::create()
+            ->setTag("value", new FloatTag((float) $this->value));
     }
 }
