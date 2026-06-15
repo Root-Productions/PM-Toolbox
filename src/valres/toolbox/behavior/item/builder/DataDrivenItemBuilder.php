@@ -43,6 +43,7 @@ class DataDrivenItemBuilder extends ItemBuilder {
      */
     public function addComponent(DataDrivenItemComponent $component): self {
         $this->components[$component::identifier()] = $component;
+        $this->invalidateNbtCache();
         return $this;
     }
 
@@ -55,6 +56,7 @@ class DataDrivenItemBuilder extends ItemBuilder {
      */
     public function removeComponent(string $componentId): self {
         unset($this->components[$componentId]);
+        $this->invalidateNbtCache();
         return $this;
     }
 
@@ -87,6 +89,7 @@ class DataDrivenItemBuilder extends ItemBuilder {
      */
     public function addProperty(DataDrivenItemProperty $property): self {
         $this->properties[$property::identifier()] = $property;
+        $this->invalidateNbtCache();
         return $this;
     }
 
@@ -99,6 +102,7 @@ class DataDrivenItemBuilder extends ItemBuilder {
      */
     public function removeProperty(string $propertyId): self {
         unset($this->properties[$propertyId]);
+        $this->invalidateNbtCache();
         return $this;
     }
 
@@ -119,23 +123,28 @@ class DataDrivenItemBuilder extends ItemBuilder {
      * @return CompoundTag
      */
     public function toNBT(): CompoundTag {
-        $components = CompoundTag::create();
-        $properties = CompoundTag::create();
-
-        foreach ($this->getProperties() as $id => $property) {
-            $properties->setTag($id, $property->toNBT());
-        }
-
         foreach ($this->getComponents() as $id => $component) {
-            $components->setTag($id, $component->toNBT());
             $this->registerTags($component);
         }
 
-        $components->setTag(static::TAG_ITEM_PROPERTIES, $properties);
-        return CompoundTag::create()
-            ->setTag(static::TAG_ID, new IntTag($this->getTypeId()))
-            ->setTag(static::TAG_NAME, new StringTag($this->getRuntimeId()))
-            ->setTag(static::TAG_COMPONENTS, $components);
+        return $this->cachedNbt(function(): CompoundTag {
+            $components = CompoundTag::create();
+            $properties = CompoundTag::create();
+
+            foreach ($this->getProperties() as $id => $property) {
+                $properties->setTag($id, $property->toNBT());
+            }
+
+            foreach ($this->getComponents() as $id => $component) {
+                $components->setTag($id, $component->toNBT());
+            }
+
+            $components->setTag(static::TAG_ITEM_PROPERTIES, $properties);
+            return CompoundTag::create()
+                ->setTag(static::TAG_ID, new IntTag($this->getTypeId()))
+                ->setTag(static::TAG_NAME, new StringTag($this->getRuntimeId()))
+                ->setTag(static::TAG_COMPONENTS, $components);
+        });
     }
 
     /**

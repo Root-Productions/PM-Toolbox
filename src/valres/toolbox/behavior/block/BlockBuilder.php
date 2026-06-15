@@ -52,6 +52,11 @@ final class BlockBuilder {
     /** @var array<string, BlockTrait> */
     private array $traits = [];
 
+    private ?CompoundTag $nbtCache = null;
+
+    /** @var BlockStateDictionaryEntry[]|null */
+    private ?array $blockStateDictionaryEntriesCache = null;
+
     public function __construct(Block $block) {
         $this->block = $block;
     }
@@ -76,6 +81,7 @@ final class BlockBuilder {
 
     public function setBlock(Block $block): void {
         $this->block = $block;
+        $this->invalidateCache();
     }
 
     public function getBlockFactory(): Closure {
@@ -98,6 +104,7 @@ final class BlockBuilder {
 
     public function setRuntimeId(string $runtimeId): self {
         $this->runtimeId = $runtimeId;
+        $this->invalidateCache();
         return $this;
     }
 
@@ -107,6 +114,7 @@ final class BlockBuilder {
 
     public function setTypeId(int $typeId): self {
         $this->typeId = $typeId;
+        $this->invalidateCache();
         return $this;
     }
 
@@ -142,6 +150,7 @@ final class BlockBuilder {
         }
 
         $this->tags[] = $tag;
+        $this->invalidateCache();
     }
 
     public function getComponents(): array {
@@ -158,11 +167,13 @@ final class BlockBuilder {
 
     public function addComponent(BlockComponent $component): self {
         $this->components[$component->getIdentifier()] = $component;
+        $this->invalidateCache();
         return $this;
     }
 
     public function removeComponent(string $id): void {
         unset($this->components[$id]);
+        $this->invalidateCache();
     }
 
     public function getPermutations(): array {
@@ -171,6 +182,7 @@ final class BlockBuilder {
 
     public function addPermutation(BlockPermutation $permutation): self {
         $this->permutations[] = $permutation;
+        $this->invalidateCache();
         return $this;
     }
 
@@ -190,6 +202,7 @@ final class BlockBuilder {
 
     public function addProperty(BlockStateProperty $property): self {
         $this->properties[] = $property;
+        $this->invalidateCache();
         return $this;
     }
 
@@ -207,11 +220,13 @@ final class BlockBuilder {
 
     public function addTrait(BlockTrait $trait): self {
         $this->traits[$trait->getIdentifier()] = $trait;
+        $this->invalidateCache();
         return $this;
     }
 
     public function removeTrait(string $id): void {
         unset($this->traits[$id]);
+        $this->invalidateCache();
     }
 
     /** @throws ReflectionException|ItemRegistryException */
@@ -235,6 +250,10 @@ final class BlockBuilder {
     }
 
     public function toNBT(): CompoundTag {
+        if ($this->nbtCache !== null) {
+            return clone $this->nbtCache;
+        }
+
         $components = CompoundTag::create();
         foreach ($this->components as $id => $component) {
             $components->setTag($id, $component->toNBT());
@@ -254,7 +273,7 @@ final class BlockBuilder {
             $properties[] = $property->toNBT();
         }
 
-        return CompoundTag::create()
+        $this->nbtCache = CompoundTag::create()
             ->setTag("components", $components)
             ->setTag("permutations", new ListTag(
                 array_map(fn (BlockPermutation $permutation) => $permutation->toNBT(), $this->permutations),
@@ -279,15 +298,21 @@ final class BlockBuilder {
                 ->setTag("material", new StringTag("dirt"))
             )
             ->setTag("molangVersion", new IntTag(13));
+
+        return clone $this->nbtCache;
     }
 
     /**
      * @return BlockStateDictionaryEntry[]
      */
     public function getBlockStateDictionaryEntries(): array {
+        if ($this->blockStateDictionaryEntriesCache !== null) {
+            return $this->blockStateDictionaryEntriesCache;
+        }
+
         $properties = $this->getAllStateProperties();
         if (empty($properties)) {
-            return [new BlockStateDictionaryEntry($this->getRuntimeId(), [], 0)];
+            return $this->blockStateDictionaryEntriesCache = [new BlockStateDictionaryEntry($this->getRuntimeId(), [], 0)];
         }
 
         $propertyNames = array_map(static fn(BlockStateProperty $p) => $p->getName(), $properties);
@@ -302,7 +327,12 @@ final class BlockBuilder {
             $entries[] = new BlockStateDictionaryEntry($this->getRuntimeId(), $states, $k);
         }
 
-        return $entries;
+        return $this->blockStateDictionaryEntriesCache = $entries;
+    }
+
+    private function invalidateCache(): void {
+        $this->nbtCache = null;
+        $this->blockStateDictionaryEntriesCache = null;
     }
 
     /** @return list<BlockStateProperty> */

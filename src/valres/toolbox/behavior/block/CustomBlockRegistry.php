@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace valres\toolbox\behavior\block;
 
 use Closure;
+use Generator;
 use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockTypeIds;
@@ -34,6 +35,8 @@ use valres\toolbox\behavior\creative\CreativeInventoryManager;
 use valres\toolbox\behavior\exception\BlockRegistryException;
 use valres\toolbox\behavior\item\ItemFormatEnum;
 use valres\toolbox\behavior\item\ItemTypeDictionaryMapper;
+use valres\toolbox\task\TaskHandle;
+use valres\toolbox\task\Tasks;
 use valres\toolbox\ToolboxLoader;
 
 final class CustomBlockRegistry {
@@ -94,12 +97,76 @@ final class CustomBlockRegistry {
     }
 
     /**
+     * Schedules registry loading over multiple ticks to reduce startup stalls.
+     *
+     * @param  class-string $registryClass
+     * @param  string       $namespace
+     * @param  Closure|null $runtimeIdResolver function(string $name, Block $block, string $namespace): string
+     * @param  int          $blocksPerTick
+     * @param  int          $intervalTicks
+     * @param  Closure|null $onComplete
+     *
+     * @return TaskHandle
+     */
+    public static function registerAllBatched(
+        string $registryClass,
+        string $namespace,
+        ?Closure $runtimeIdResolver = null,
+        int $blocksPerTick = 10,
+        int $intervalTicks = 1,
+        ?Closure $onComplete = null
+    ): TaskHandle {
+        return self::getInstance()->registerAllFromBatched(
+            $registryClass,
+            $namespace,
+            $runtimeIdResolver,
+            $blocksPerTick,
+            $intervalTicks,
+            $onComplete
+        );
+    }
+
+    /**
      * @param  class-string $registryClass
      * @param  Closure|null $runtimeIdResolver function(string $name, Block $block, string $namespace): string
      *
      * @throws BlockRegistryException|ReflectionException
      */
     public function registerAllFrom(string $registryClass, string $namespace, ?Closure $runtimeIdResolver = null): int {
+        $registered = 0;
+        foreach ($this->registerAllFromGenerator($registryClass, $namespace, $runtimeIdResolver) as $registered) {
+        }
+
+        return $registered;
+    }
+
+    /**
+     * @param  class-string $registryClass
+     * @param  Closure|null $runtimeIdResolver function(string $name, Block $block, string $namespace): string
+     */
+    public function registerAllFromBatched(
+        string $registryClass,
+        string $namespace,
+        ?Closure $runtimeIdResolver = null,
+        int $blocksPerTick = 10,
+        int $intervalTicks = 1,
+        ?Closure $onComplete = null
+    ): TaskHandle {
+        return Tasks::generator(
+            $this->registerAllFromGenerator($registryClass, $namespace, $runtimeIdResolver),
+            $blocksPerTick,
+            $intervalTicks,
+            $onComplete
+        );
+    }
+
+    /**
+     * @param  class-string $registryClass
+     * @param  Closure|null $runtimeIdResolver function(string $name, Block $block, string $namespace): string
+     *
+     * @return Generator<int, int>
+     */
+    public function registerAllFromGenerator(string $registryClass, string $namespace, ?Closure $runtimeIdResolver = null): Generator {
         if (!class_exists($registryClass)) {
             throw new BlockRegistryException("Block registry class '" . $registryClass . "' does not exist.");
         }
@@ -134,6 +201,7 @@ final class CustomBlockRegistry {
                 return clone $block;
             });
             ++$registered;
+            yield $registered;
         }
 
         return $registered;

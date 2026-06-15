@@ -34,6 +34,7 @@ class LegacyItemBuilder extends ItemBuilder {
      */
     public function addComponent(LegacyItemComponent $component): self {
         $this->components[$component::identifier()] = $component;
+        $this->invalidateNbtCache();
         return $this;
     }
 
@@ -46,6 +47,7 @@ class LegacyItemBuilder extends ItemBuilder {
      */
     public function removeComponent(string $componentId): self {
         unset($this->components[$componentId]);
+        $this->invalidateNbtCache();
         return $this;
     }
 
@@ -66,12 +68,14 @@ class LegacyItemBuilder extends ItemBuilder {
      * @return CompoundTag
      */
     public function toNBT(): CompoundTag {
-        $components = CompoundTag::create();
+        return $this->cachedNbt(function(): CompoundTag {
+            $components = CompoundTag::create();
 
-        foreach ($this->components as $id => $component) {
-            $components->setTag($id, $component->toNBT());
-        }
+            foreach ($this->components as $id => $component) {
+                $components->setTag($id, $component->toNBT());
+            }
 
-        return CompoundTag::create()->setTag(static::TAG_COMPONENTS, $components);
+            return CompoundTag::create()->setTag(static::TAG_COMPONENTS, $components);
+        });
     }
 }
