@@ -41,7 +41,7 @@ class BlockDataResolver {
         $builder->addComponent(new DisplayNameBlockComponent("tile." . $builder->getRuntimeId() . ".name"));
         $builder->addComponent(new OnPlayerPlacingComponent());
 
-        $builder->addComponent(new CollisionBoxComponent(!empty($block->getCollisionBoxes())));
+        $builder->addComponent(new CollisionBoxComponent(!$block->isTransparent() || !empty($block->getCollisionBoxes())));
         $builder->addComponent(new SelectionBoxComponent(true));
 
         $builder->addComponent(new DestructibleByExplosionComponent($block->getBreakInfo()->getBlastResistance()));

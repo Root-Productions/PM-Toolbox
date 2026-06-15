@@ -33,6 +33,10 @@ final class CollisionBoxComponent extends BlockComponent {
             $enabled = $this->value;
         }
 
+        if (!$enabled) {
+            return ComponentNbtHelper::compound(["enabled" => false]);
+        }
+
         return ComponentNbtHelper::compound([
             "enabled" => $enabled,
             "boxes" => array_map(
