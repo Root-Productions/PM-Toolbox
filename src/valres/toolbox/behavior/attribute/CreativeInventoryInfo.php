@@ -6,12 +6,13 @@ namespace valres\toolbox\behavior\attribute;
 
 use Attribute;
 use pocketmine\inventory\CreativeCategory;
+use valres\toolbox\behavior\creative\CreativeGroupEnum;
 
 #[Attribute(Attribute::TARGET_CLASS)]
 class CreativeInventoryInfo {
     public function __construct(
         private readonly ?CreativeCategory $category = CreativeCategory::ITEMS,
-        private readonly ?string $group = null,
+        private readonly CreativeGroupEnum|string|null $group = null,
         private readonly bool $isHidden = false,
     ) {
     }
@@ -20,7 +21,7 @@ class CreativeInventoryInfo {
         return $this->category;
     }
 
-    public function getGroup(): ?string {
+    public function getGroup(): CreativeGroupEnum|string|null {
         return $this->group;
     }
 

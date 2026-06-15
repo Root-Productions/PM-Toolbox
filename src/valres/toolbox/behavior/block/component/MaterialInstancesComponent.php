@@ -7,6 +7,8 @@ namespace valres\toolbox\behavior\block\component;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\block\component\type\MaterialInstance;
+use valres\toolbox\behavior\block\component\type\MaterialInstanceTarget;
+use valres\toolbox\behavior\block\component\type\RenderMethod;
 
 final class MaterialInstancesComponent extends BlockComponent {
     /** @param array<string, MaterialInstance|string|array<string, mixed>> $instances */
@@ -19,6 +21,25 @@ final class MaterialInstancesComponent extends BlockComponent {
 
     public static function all(MaterialInstance $instance): self {
         return new self(["*" => $instance]);
+    }
+
+    public static function sided(
+        string $side,
+        ?string $top = null,
+        ?string $bottom = null,
+        RenderMethod|string $renderMethod = RenderMethod::OPAQUE
+    ): self {
+        $top ??= $side;
+        $bottom ??= $side;
+
+        return new self([
+            MaterialInstanceTarget::NORTH->value => new MaterialInstance($side, $renderMethod),
+            MaterialInstanceTarget::EAST->value => new MaterialInstance($side, $renderMethod),
+            MaterialInstanceTarget::SOUTH->value => new MaterialInstance($side, $renderMethod),
+            MaterialInstanceTarget::WEST->value => new MaterialInstance($side, $renderMethod),
+            MaterialInstanceTarget::UP->value => new MaterialInstance($top, $renderMethod),
+            MaterialInstanceTarget::DOWN->value => new MaterialInstance($bottom, $renderMethod)
+        ]);
     }
 
     public function toNBT(): Tag {

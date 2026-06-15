@@ -16,11 +16,18 @@ use valres\toolbox\behavior\block\component\MaterialInstancesComponent;
 use valres\toolbox\behavior\block\component\SelectionBoxComponent;
 use valres\toolbox\behavior\block\component\type\MaterialInstance;
 use valres\toolbox\behavior\block\component\type\RenderMethod;
+use valres\toolbox\behavior\block\permutation\attribute\BlockPermutationResolver;
+use valres\toolbox\behavior\block\permutation\BlockStateQuery;
 use valres\toolbox\behavior\block\permutation\BlockPermutation;
-use valres\toolbox\behavior\block\PermutationsResolver;
 use valres\toolbox\behavior\block\property\BlockStateProperty;
 
-final class CropsPermutationResolver extends PermutationsResolver {
+#[BlockPermutationResolver]
+final class CropsPermutationResolver extends VanillaPermutationResolver {
+    public function supports(BlockBuilder $builder): bool {
+        $block = $builder->getBlock();
+        return $block instanceof Crops || $block instanceof NetherWartPlant;
+    }
+
     public function resolve(BlockBuilder $builder): void {
         $block = $builder->getBlock();
         if (!$block instanceof Crops && !$block instanceof NetherWartPlant) {
@@ -37,7 +44,7 @@ final class CropsPermutationResolver extends PermutationsResolver {
 
         foreach ($ages as $age) {
             $height = (($age + 1.0) * (1 / $block::MAX_AGE)) * 0.7 * 16;
-            $permutation = new BlockPermutation("q.block_state('{$stateName}') == {$age}");
+            $permutation = new BlockPermutation(BlockStateQuery::equals($stateName, $age));
             $permutation->addComponent(MaterialInstancesComponent::all(
                 new MaterialInstance($builder->getName() . "_{$age}", RenderMethod::ALPHA_TEST)
             ));

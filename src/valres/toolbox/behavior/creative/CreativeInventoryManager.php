@@ -57,7 +57,7 @@ final class CreativeInventoryManager {
         $this->add($item, $info->getCategory() ?? CreativeCategory::ITEMS, $info->getGroup());
     }
 
-    public function add(Item $item, CreativeCategory $category = CreativeCategory::ITEMS, ?string $groupName = null): void {
+    public function add(Item $item, CreativeCategory $category = CreativeCategory::ITEMS, CreativeGroupEnum|string|null $groupName = null): void {
         $inventory = CreativeInventory::getInstance();
         if ($inventory->contains($item)) {
             $inventory->remove($item);
@@ -66,30 +66,33 @@ final class CreativeInventoryManager {
         $inventory->add($item, $category, $this->resolveGroup($groupName, $category, $item));
     }
 
-    public function getGroup(?string $groupName): ?PMMPCreativeGroup {
+    public function getGroup(CreativeGroupEnum|string|null $groupName): ?PMMPCreativeGroup {
         if ($groupName === null) {
             return null;
         }
 
         $this->loadCreativeGroups();
+        $groupName = $this->normalizeGroupName($groupName);
         return $this->groups[$groupName] ?? null;
     }
 
-    public function getGroupCategory(?string $groupName): ?CreativeCategory {
+    public function getGroupCategory(CreativeGroupEnum|string|null $groupName): ?CreativeCategory {
         if ($groupName === null) {
             return null;
         }
 
         $this->loadCreativeGroups();
+        $groupName = $this->normalizeGroupName($groupName);
         return $this->groupToCategory[$groupName] ?? null;
     }
 
-    private function resolveGroup(?string $groupName, CreativeCategory $category, Item $icon): ?PMMPCreativeGroup {
+    private function resolveGroup(CreativeGroupEnum|string|null $groupName, CreativeCategory $category, Item $icon): ?PMMPCreativeGroup {
         if ($groupName === null) {
             return null;
         }
 
         $this->loadCreativeGroups();
+        $groupName = $this->normalizeGroupName($groupName);
         $group = $this->categoryToGroups[$category->name][$groupName]
             ?? $this->groups[$groupName]
             ?? new PMMPCreativeGroup($groupName, $icon);
@@ -109,5 +112,9 @@ final class CreativeInventoryManager {
     private function getGroupName(PMMPCreativeGroup $group): string {
         $name = $group->getName();
         return $name instanceof Translatable ? $name->getText() : $name;
+    }
+
+    private function normalizeGroupName(CreativeGroupEnum|string $groupName): string {
+        return $groupName instanceof CreativeGroupEnum ? $groupName->value : $groupName;
     }
 }

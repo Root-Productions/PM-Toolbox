@@ -11,13 +11,17 @@ use pocketmine\data\bedrock\block\convert\BlockStateWriter;
 use valres\toolbox\behavior\block\BlockBuilder;
 use valres\toolbox\behavior\block\component\GeometryComponent;
 use valres\toolbox\behavior\block\component\MaterialInstancesComponent;
-use valres\toolbox\behavior\block\component\type\MaterialInstance;
-use valres\toolbox\behavior\block\component\type\MaterialInstanceTarget;
 use valres\toolbox\behavior\block\component\type\RenderMethod;
-use valres\toolbox\behavior\block\PermutationsResolver;
+use valres\toolbox\behavior\block\permutation\attribute\BlockPermutationResolver;
+use valres\toolbox\behavior\block\permutation\BlockStateQuery;
 use valres\toolbox\behavior\block\property\BlockStateProperty;
 
-final class HopperPermutationResolver extends PermutationsResolver {
+#[BlockPermutationResolver]
+final class HopperPermutationResolver extends VanillaPermutationResolver {
+    public function supports(BlockBuilder $builder): bool {
+        return $builder->getBlock() instanceof Hopper;
+    }
+
     public function resolve(BlockBuilder $builder): void {
         $block = $builder->getBlock();
         if (!$block instanceof Hopper) {
@@ -31,21 +35,19 @@ final class HopperPermutationResolver extends PermutationsResolver {
         $builder->addProperty(new BlockStateProperty(BlockStateNames::TOGGLE_BIT, range(0, 1)));
 
         $builder->addComponent((new GeometryComponent("minecraft.hopper"))
-            ->add("north", "q.block_state('" . BlockStateNames::FACING_DIRECTION . "') == 2")
-            ->add("south", "q.block_state('" . BlockStateNames::FACING_DIRECTION . "') == 3")
-            ->add("east", "q.block_state('" . BlockStateNames::FACING_DIRECTION . "') == 5")
-            ->add("west", "q.block_state('" . BlockStateNames::FACING_DIRECTION . "') == 4")
-            ->add("ground", "q.block_state('" . BlockStateNames::FACING_DIRECTION . "') == 0")
+            ->add("north", BlockStateQuery::equals(BlockStateNames::FACING_DIRECTION, 2))
+            ->add("south", BlockStateQuery::equals(BlockStateNames::FACING_DIRECTION, 3))
+            ->add("east", BlockStateQuery::equals(BlockStateNames::FACING_DIRECTION, 5))
+            ->add("west", BlockStateQuery::equals(BlockStateNames::FACING_DIRECTION, 4))
+            ->add("ground", BlockStateQuery::equals(BlockStateNames::FACING_DIRECTION, 0))
         );
 
-        $builder->addComponent(new MaterialInstancesComponent([
-            MaterialInstanceTarget::NORTH->value => new MaterialInstance("{$name}_outside", RenderMethod::ALPHA_TEST),
-            MaterialInstanceTarget::EAST->value => new MaterialInstance("{$name}_outside", RenderMethod::ALPHA_TEST),
-            MaterialInstanceTarget::SOUTH->value => new MaterialInstance("{$name}_outside", RenderMethod::ALPHA_TEST),
-            MaterialInstanceTarget::WEST->value => new MaterialInstance("{$name}_outside", RenderMethod::ALPHA_TEST),
-            MaterialInstanceTarget::UP->value => new MaterialInstance("{$name}_top", RenderMethod::ALPHA_TEST),
-            MaterialInstanceTarget::DOWN->value => new MaterialInstance("{$name}_inside", RenderMethod::ALPHA_TEST)
-        ]));
+        $builder->addComponent(MaterialInstancesComponent::sided(
+            "{$name}_outside",
+            "{$name}_top",
+            "{$name}_inside",
+            RenderMethod::ALPHA_TEST
+        ));
 
         $builder->setSerializer(static fn(Hopper $block): BlockStateWriter => (new BlockStateWriter($runtimeId))
             ->writeInt(BlockStateNames::TOGGLE_BIT, $block->isPowered() ? 1 : 0)
