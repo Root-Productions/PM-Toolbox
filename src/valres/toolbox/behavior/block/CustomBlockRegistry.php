@@ -74,6 +74,63 @@ final class CustomBlockRegistry {
     }
 
     /**
+     * Registers every block exposed by a static block registry such as PocketMine's CloningRegistryTrait.
+     *
+     * The registry class must expose a public static getAll(): array method returning Block instances.
+     *
+     * @param  class-string $registryClass
+     * @param  string       $namespace
+     * @param  Closure|null $runtimeIdResolver function(string $name, Block $block, string $namespace): string
+     *
+     * @throws BlockRegistryException|ReflectionException
+     * @return int
+     */
+    public static function registerAll(
+        string $registryClass,
+        string $namespace,
+        ?Closure $runtimeIdResolver = null
+    ): int {
+        return self::getInstance()->registerAllFrom($registryClass, $namespace, $runtimeIdResolver);
+    }
+
+    /**
+     * @param  class-string $registryClass
+     * @param  Closure|null $runtimeIdResolver function(string $name, Block $block, string $namespace): string
+     *
+     * @throws BlockRegistryException|ReflectionException
+     */
+    public function registerAllFrom(string $registryClass, string $namespace, ?Closure $runtimeIdResolver = null): int {
+        if (!class_exists($registryClass)) {
+            throw new BlockRegistryException("Block registry class '" . $registryClass . "' does not exist.");
+        }
+
+        if (!method_exists($registryClass, "getAll")) {
+            throw new BlockRegistryException("Block registry class '" . $registryClass . "' must expose a static getAll() method.");
+        }
+
+        $namespace = self::normalizeRuntimePath($namespace);
+        if ($namespace === "" || $namespace === "minecraft") {
+            throw new BlockRegistryException("Custom block namespace cannot be empty or minecraft.");
+        }
+
+        $registered = 0;
+        foreach ($registryClass::getAll() as $name => $block) {
+            if (!$block instanceof Block) {
+                throw new BlockRegistryException("Block registry entry '" . $name . "' must be a Block.");
+            }
+
+            $runtimeId = $runtimeIdResolver !== null
+                ? $runtimeIdResolver((string) $name, $block, $namespace)
+                : $namespace . ":" . self::normalizeRuntimePath((string) $name);
+
+            $this->register($runtimeId, static fn () => clone $block);
+            ++$registered;
+        }
+
+        return $registered;
+    }
+
+    /**
      * Registers an already configured block builder.
      *
      * @throws BlockRegistryException|ReflectionException
@@ -265,6 +322,12 @@ final class CustomBlockRegistry {
         if (str_starts_with($runtimeId, "minecraft:")) {
             throw new InvalidArgumentException("Custom block runtime ID cannot use the minecraft namespace.");
         }
+    }
+
+    private static function normalizeRuntimePath(string $value): string {
+        $value = strtolower(trim($value));
+        $value = preg_replace("/[^a-z0-9_\\.\\/-]+/", "_", $value) ?? "";
+        return trim($value, "_");
     }
 
     private function createBlock(Closure $blockClosure, ?int $typeId): mixed {

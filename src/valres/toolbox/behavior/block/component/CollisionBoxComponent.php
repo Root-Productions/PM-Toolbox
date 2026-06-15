@@ -23,22 +23,20 @@ final class CollisionBoxComponent extends BlockComponent {
 
     public function toNBT(): Tag {
         $enabled = true;
-        $boxes = [BlockBox::cube()];
+        $box = BlockBox::cube();
 
         if ($this->value instanceof BlockBox) {
-            $boxes = [$this->value];
+            $box = $this->value;
         } elseif (is_array($this->value)) {
-            $boxes = $this->value;
+            $box = $this->value[0] ?? BlockBox::cube();
         } else {
             $enabled = $this->value;
         }
 
-        return ComponentNbtHelper::compound([
-            "enabled" => $enabled,
-            "boxes" => array_map(
-                static fn(BlockBox $box): array => $box->toCollisionArray(),
-                $boxes
-            )
-        ]);
+        if (!$enabled) {
+            return ComponentNbtHelper::compound(["enabled" => false]);
+        }
+
+        return ComponentNbtHelper::compound($box->toArray() + ["enabled" => true]);
     }
 }

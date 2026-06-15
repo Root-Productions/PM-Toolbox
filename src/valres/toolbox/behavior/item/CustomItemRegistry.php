@@ -53,12 +53,69 @@ final class CustomItemRegistry {
             throw new ItemRegistryException("Item '". $runtimeId . "' is already registered.");
         }
 
-        $format = ItemFormatEnum::fromItem($item);
+        $format = $this->resolveItemFormat($item);
         if ($format === ItemFormatEnum::LEGACY) {
             $this->registerLegacyItem($runtimeId, $item);
         } else {
             $this->registerDataDrivenItem($runtimeId, $item);
         }
+    }
+
+    /**
+     * Registers every item exposed by a static item registry such as PocketMine's CloningRegistryTrait.
+     *
+     * The registry class must expose a public static getAll(): array method returning Item instances.
+     *
+     * @param  class-string $registryClass
+     * @param  string       $namespace
+     * @param  Closure|null $runtimeIdResolver function(string $name, Item $item, string $namespace): string
+     *
+     * @throws ItemRegistryException|ReflectionException
+     * @return int
+     */
+    public static function registerAll(
+        string $registryClass,
+        string $namespace,
+        ?Closure $runtimeIdResolver = null
+    ): int {
+        return self::getInstance()->registerAllFrom($registryClass, $namespace, $runtimeIdResolver);
+    }
+
+    /**
+     * @param  class-string $registryClass
+     * @param  Closure|null $runtimeIdResolver function(string $name, Item $item, string $namespace): string
+     *
+     * @throws ItemRegistryException|ReflectionException
+     */
+    public function registerAllFrom(string $registryClass, string $namespace, ?Closure $runtimeIdResolver = null): int {
+        if (!class_exists($registryClass)) {
+            throw new ItemRegistryException("Item registry class '" . $registryClass . "' does not exist.");
+        }
+
+        if (!method_exists($registryClass, "getAll")) {
+            throw new ItemRegistryException("Item registry class '" . $registryClass . "' must expose a static getAll() method.");
+        }
+
+        $namespace = self::normalizeRuntimePath($namespace);
+        if ($namespace === "" || $namespace === "minecraft") {
+            throw new ItemRegistryException("Custom item namespace cannot be empty or minecraft.");
+        }
+
+        $registered = 0;
+        foreach ($registryClass::getAll() as $name => $item) {
+            if (!$item instanceof Item) {
+                throw new ItemRegistryException("Item registry entry '" . $name . "' must be an Item.");
+            }
+
+            $runtimeId = $runtimeIdResolver !== null
+                ? $runtimeIdResolver((string) $name, $item, $namespace)
+                : $namespace . ":" . self::normalizeRuntimePath((string) $name);
+
+            $this->register($runtimeId, static fn () => clone $item);
+            ++$registered;
+        }
+
+        return $registered;
     }
 
     /**
@@ -96,7 +153,9 @@ final class CustomItemRegistry {
      * @return void
      */
     public function registerDataDrivenItem(string $runtimeId, Item $item): void {
-        $format = ItemFormatEnum::fromItem($item);
+        $this->validateRuntimeId($runtimeId);
+
+        $format = $this->resolveItemFormat($item);
         if ($format !== ItemFormatEnum::DATA_DRIVEN) {
             throw new ItemRegistryException("Item must be a Data-Driven item.");
         }
@@ -222,7 +281,7 @@ final class CustomItemRegistry {
 
     private function validateRuntimeId(string $runtimeId): void {
         if (trim($runtimeId) === "") {
-            throw new InvalidArgumentException("Block runtime ID cannot be empty.");
+            throw new InvalidArgumentException("Item runtime ID cannot be empty.");
         }
 
         if (!str_contains($runtimeId, ":")) {
@@ -232,6 +291,20 @@ final class CustomItemRegistry {
         if (str_starts_with($runtimeId, "minecraft:")) {
             throw new InvalidArgumentException("Custom item runtime ID cannot use the minecraft namespace.");
         }
+    }
+
+    private function resolveItemFormat(Item $item): ItemFormatEnum {
+        try {
+            return ItemFormatEnum::fromItem($item);
+        } catch (InvalidArgumentException) {
+            return ItemFormatEnum::DATA_DRIVEN;
+        }
+    }
+
+    private static function normalizeRuntimePath(string $value): string {
+        $value = strtolower(trim($value));
+        $value = preg_replace("/[^a-z0-9_\\.\\/-]+/", "_", $value) ?? "";
+        return trim($value, "_");
     }
 
     private function registerItemParserAlias(string $alias, Closure $factory): void {
