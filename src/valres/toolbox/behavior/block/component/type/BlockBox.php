@@ -12,15 +12,15 @@ final class BlockBox {
     }
 
     public static function cube(): self {
-        return new self([-8, 0, -8], [16, 16, 16]);
+        return new self([-8.0, 0.0, -8.0], [16.0, 16.0, 16.0]);
     }
 
     public function toCollisionArray(): array {
-        $origin = array_values($this->origin);
-        $size = array_values($this->size);
-        $minX = 8 + $origin[0];
+        $origin = array_map("floatval", array_values($this->origin));
+        $size = array_map("floatval", array_values($this->size));
+        $minX = 8.0 + $origin[0];
         $minY = $origin[1];
-        $minZ = 8 + $origin[2];
+        $minZ = 8.0 + $origin[2];
 
         return [
             "minX" => $minX,
@@ -34,8 +34,8 @@ final class BlockBox {
 
     public function toArray(): array {
         return [
-            "origin" => $this->origin,
-            "size" => $this->size
+            "origin" => array_map("floatval", array_values($this->origin)),
+            "size" => array_map("floatval", array_values($this->size))
         ];
     }
 }
