@@ -7,6 +7,7 @@ namespace valres\toolbox\behavior\block;
 use pocketmine\block\Flowable;
 use valres\toolbox\behavior\block\component\CollisionBoxComponent;
 use valres\toolbox\behavior\block\component\ConnectionRuleComponent;
+use valres\toolbox\behavior\block\component\CustomComponentsComponent;
 use valres\toolbox\behavior\block\component\DestructibleByExplosionComponent;
 use valres\toolbox\behavior\block\component\DestructibleByMiningComponent;
 use valres\toolbox\behavior\block\component\DisplayNameBlockComponent;
@@ -39,7 +40,10 @@ class BlockDataResolver {
         $builder->addComponent(MaterialInstancesComponent::all($material));
         $builder->addComponent(new ItemVisualComponent(new BlockVisual("minecraft:geometry.full_block", ["*" => $material])));
         $builder->addComponent(new DisplayNameBlockComponent("tile." . $builder->getRuntimeId() . ".name"));
-        $builder->addComponent(new OnPlayerPlacingComponent());
+        //$builder->addComponent(new OnPlayerPlacingComponent());
+        $builder->addComponent(new CustomComponentsComponent(
+            hasPlayerInteract: false
+        ));
 
         $builder->addComponent(new CollisionBoxComponent(!$block->isTransparent() || !empty($block->getCollisionBoxes())));
         $builder->addComponent(new SelectionBoxComponent(true));
