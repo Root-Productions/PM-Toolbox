@@ -60,6 +60,6 @@ class BlockDataResolver {
             $block->defineBlockComponents($builder);
         }
 
-        PermutationsResolver::resolve($builder);
+        PermutationsResolver::resolveAll($builder);
     }
 }

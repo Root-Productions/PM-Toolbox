@@ -4,45 +4,31 @@ declare(strict_types=1);
 
 namespace valres\toolbox\behavior\block;
 
-use pocketmine\block\Crops;
-use pocketmine\data\bedrock\block\BlockStateNames;
-use pocketmine\data\bedrock\block\convert\BlockStateReader;
-use pocketmine\data\bedrock\block\convert\BlockStateWriter;
-use valres\toolbox\behavior\block\component\CollisionBoxComponent;
-use valres\toolbox\behavior\block\component\ConnectionRuleComponent;
-use valres\toolbox\behavior\block\component\GeometryComponent;
-use valres\toolbox\behavior\block\component\MaterialInstancesComponent;
-use valres\toolbox\behavior\block\component\SelectionBoxComponent;
-use valres\toolbox\behavior\block\component\type\MaterialInstance;
-use valres\toolbox\behavior\block\component\type\RenderMethod;
-use valres\toolbox\behavior\block\permutation\BlockPermutation;
-use valres\toolbox\behavior\block\property\BlockStateProperty;
+use valres\toolbox\behavior\block\permutation\resolver\CropsPermutationResolver;
+use valres\toolbox\behavior\block\permutation\resolver\HopperPermutationResolver;
 
-class PermutationsResolver {
-    public static function resolve(BlockBuilder $builder): void {
-        $block = $builder->getBlock();
-        $runtimeId = $builder->getRuntimeId();
+abstract class PermutationsResolver {
+    /** @var list<self>|null */
+    private static ?array $resolvers = null;
 
-        if ($block instanceof Crops) {
-            $stateName = BlockStateNames::GROWTH;
-            $ages = range(0, $block::MAX_AGE);
+    abstract public function resolve(BlockBuilder $builder): void;
 
-            $builder->addProperty(new BlockStateProperty($stateName, $ages));
-            $builder->addComponent(new GeometryComponent("geometry.crop"));
-            $builder->addComponent(new CollisionBoxComponent(false));
+    public static function register(self $resolver): void {
+        self::getResolvers();
+        self::$resolvers[] = $resolver;
+    }
 
-            foreach ($ages as $age) {
-                $height = (($age + 1.0) * (1 / $block::MAX_AGE)) * 0.7 * 16;
-                $permutation = new BlockPermutation("q.block_state('{$stateName}') == {$age}");
-                $permutation->addComponent(MaterialInstancesComponent::all(
-                    new MaterialInstance($builder->getName() . "_{$age}", RenderMethod::ALPHA_TEST)
-                ));
-                $permutation->addComponent(SelectionBoxComponent::box([-8.0, 0.0, -8.0], [16.0, $height, 16.0]));
-                $builder->addPermutation($permutation);
-            }
-
-            $builder->setDeserializer(static fn(BlockStateReader $in): Crops => (clone $block)->setAge($in->readBoundedInt(BlockStateNames::GROWTH, 0, $block::MAX_AGE)));
-            $builder->setSerializer(static fn(Crops $block): BlockStateWriter => (new BlockStateWriter($runtimeId))->writeInt(BlockStateNames::GROWTH, $block->getAge()));
+    public static function resolveAll(BlockBuilder $builder): void {
+        foreach (self::getResolvers() as $resolver) {
+            $resolver->resolve($builder);
         }
+    }
+
+    /** @return list<self> */
+    public static function getResolvers(): array {
+        return self::$resolvers ??= [
+            new CropsPermutationResolver(),
+            new HopperPermutationResolver()
+        ];
     }
 }
