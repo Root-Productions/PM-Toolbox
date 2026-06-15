@@ -123,7 +123,16 @@ final class CustomBlockRegistry {
                 ? $runtimeIdResolver((string) $name, $block, $namespace)
                 : $namespace . ":" . self::normalizeRuntimePath((string) $name);
 
-            $this->register($runtimeId, static fn () => clone $block);
+            $registryName = (string) $name;
+            $this->register($runtimeId, static function() use ($registryClass, $registryName): Block {
+                $blocks = $registryClass::getAll();
+                $block = $blocks[$registryName] ?? null;
+                if (!$block instanceof Block) {
+                    throw new BlockRegistryException("Block registry entry '" . $registryName . "' must be a Block.");
+                }
+
+                return clone $block;
+            });
             ++$registered;
         }
 
