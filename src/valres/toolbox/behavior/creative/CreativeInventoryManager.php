@@ -122,7 +122,7 @@ final class CreativeInventoryManager {
         return $groupName instanceof CreativeGroupEnum ? $groupName->value : $groupName;
     }
 
-    private function detectCreativeInfos(Item $item): CreativeInventoryInfo {
+    private function detectCreativeInfos(Item $item): ?CreativeInventoryInfo {
         return match (true) {
             $item instanceof Armor && $item->getArmorSlot() === ArmorInventory::SLOT_HEAD => new CreativeInventoryInfo(CreativeCategory::EQUIPMENT, CreativeGroupEnum::HELMET),
             $item instanceof Armor && $item->getArmorSlot() === ArmorInventory::SLOT_CHEST => new CreativeInventoryInfo(CreativeCategory::EQUIPMENT, CreativeGroupEnum::CHESTPLATE),
