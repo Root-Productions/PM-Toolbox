@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace valres\toolbox\behavior\creative;
 
+use pocketmine\inventory\ArmorInventory;
 use pocketmine\inventory\CreativeInventory;
+use pocketmine\item\Armor;
 use pocketmine\item\Item;
+use pocketmine\scheduler\CancelTaskException;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\inventory\CreativeCategory;
 use pocketmine\inventory\CreativeGroup as PMMPCreativeGroup;
 use pocketmine\lang\Translatable;
 use ReflectionClass;
 use valres\toolbox\behavior\attribute\CreativeInventoryInfo;
+use valres\toolbox\behavior\item\builder\ItemBuilder;
 
 final class CreativeInventoryManager {
     use SingletonTrait;
@@ -49,7 +53,7 @@ final class CreativeInventoryManager {
     }
 
     public function addToCreative(Item $item): void {
-        $info = $this->readCreativeInfo($item);
+        $info = $this->readCreativeInfo($item) ?? $this->detectCreativeInfos($item);
         if ($info?->isHidden() === true) {
             return;
         }
@@ -116,5 +120,15 @@ final class CreativeInventoryManager {
 
     private function normalizeGroupName(CreativeGroupEnum|string $groupName): string {
         return $groupName instanceof CreativeGroupEnum ? $groupName->value : $groupName;
+    }
+
+    private function detectCreativeInfos(Item $item): CreativeInventoryInfo {
+        return match (true) {
+            $item instanceof Armor && $item->getArmorSlot() === ArmorInventory::SLOT_HEAD => new CreativeInventoryInfo(CreativeCategory::EQUIPMENT, CreativeGroupEnum::HELMET),
+            $item instanceof Armor && $item->getArmorSlot() === ArmorInventory::SLOT_CHEST => new CreativeInventoryInfo(CreativeCategory::EQUIPMENT, CreativeGroupEnum::CHESTPLATE),
+            $item instanceof Armor && $item->getArmorSlot() === ArmorInventory::SLOT_LEGS => new CreativeInventoryInfo(CreativeCategory::EQUIPMENT, CreativeGroupEnum::LEGGINGS),
+            $item instanceof Armor && $item->getArmorSlot() === ArmorInventory::SLOT_FEET => new CreativeInventoryInfo(CreativeCategory::EQUIPMENT, CreativeGroupEnum::BOOTS),
+            default => null
+        };
     }
 }
