@@ -52,6 +52,10 @@ class ToolboxLoader {
         return self::$loaded;
     }
 
+    public static function isEnabled(): bool {
+        return self::$enabled;
+    }
+
     /** @throws ManagerException */
     public static function load(PluginBase $loader, string $managersDirectory = "manager", bool $loadManagers = true): void {
         if (!self::$loaded) {

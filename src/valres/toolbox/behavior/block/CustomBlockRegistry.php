@@ -22,6 +22,7 @@ use pocketmine\network\mcpe\protocol\types\BlockPaletteEntry;
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
 use pocketmine\network\mcpe\protocol\types\ItemTypeEntry;
 use pocketmine\plugin\PluginBase;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\world\format\io\GlobalBlockStateHandlers;
 use pocketmine\world\format\io\GlobalItemDataHandlers;
@@ -43,6 +44,8 @@ final class CustomBlockRegistry {
     private array $blocks = [];
 
     private bool $asyncWorkerHookRegistered = false;
+    private bool $asyncWorkersDirty = false;
+    private bool $asyncWorkerSyncScheduled = false;
 
     /**
      * Registers a custom block and all associated network/runtime mappings.
@@ -184,15 +187,16 @@ final class CustomBlockRegistry {
         $this->blocks[$runtimeId] = $builder;
         AsyncBlockRegistrationStore::add($builder);
 
-        if (ToolboxLoader::isLoaded()) {
-            $this->syncAsyncWorkers(ToolboxLoader::getLoader());
+        $this->asyncWorkersDirty = true;
+        if (ToolboxLoader::isEnabled()) {
+            $this->scheduleAsyncWorkerSync(ToolboxLoader::getLoader());
         }
     }
 
     /**
      * Registers custom blocks in async workers so async tasks share the main thread block mappings.
      */
-    public function syncAsyncWorkers(PluginBase $plugin): void {
+    public function syncAsyncWorkers(PluginBase $plugin, bool $force = false): void {
         $pool = $plugin->getServer()->getAsyncPool();
         if (!$this->asyncWorkerHookRegistered && method_exists($pool, "addWorkerStartHook")) {
             $this->asyncWorkerHookRegistered = true;
@@ -204,10 +208,16 @@ final class CustomBlockRegistry {
             });
         }
 
+        if (!$force && !$this->asyncWorkersDirty) {
+            return;
+        }
+
         $definitions = AsyncBlockRegistrationStore::getAll();
         if ($definitions === [] || !method_exists($pool, "submitTaskToWorker")) {
             return;
         }
+
+        $this->asyncWorkersDirty = false;
 
         if (method_exists($pool, "getSize")) {
             for ($worker = 0; $worker < $pool->getSize(); $worker++) {
@@ -217,6 +227,18 @@ final class CustomBlockRegistry {
         }
 
         $pool->submitTask(new AsyncRegisterBlocksTask($definitions));
+    }
+
+    private function scheduleAsyncWorkerSync(PluginBase $plugin): void {
+        if ($this->asyncWorkerSyncScheduled) {
+            return;
+        }
+
+        $this->asyncWorkerSyncScheduled = true;
+        $plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($plugin): void {
+            $this->asyncWorkerSyncScheduled = false;
+            $this->syncAsyncWorkers($plugin);
+        }), 1);
     }
 
     /**
