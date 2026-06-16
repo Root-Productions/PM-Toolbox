@@ -47,8 +47,8 @@ final class SeedComponent extends LegacyItemComponent {
 
     private function normalizeBlockName(string $blockName): string {
         return str_replace(
-            ["high:", "minecraft:", "grass_block", "air"],
-            ["", "", "grass", "light_block"],
+            ["minecraft:", "grass_block", "air"],
+            ["", "grass", "light_block"],
             strtolower($blockName)
         );
     }
