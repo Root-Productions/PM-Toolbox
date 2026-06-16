@@ -34,7 +34,7 @@ final class HopperPermutationResolver extends VanillaPermutationResolver {
         $builder->addProperty(new BlockStateProperty(BlockStateNames::FACING_DIRECTION, range(0, 5)));
         $builder->addProperty(new BlockStateProperty(BlockStateNames::TOGGLE_BIT, range(0, 1)));
 
-        $builder->addComponent((new GeometryComponent("minecraft.hopper"))
+        $builder->addComponent((new GeometryComponent("geometry.hopper"))
             ->add("north", BlockStateQuery::equals(BlockStateNames::FACING_DIRECTION, 2))
             ->add("south", BlockStateQuery::equals(BlockStateNames::FACING_DIRECTION, 3))
             ->add("east", BlockStateQuery::equals(BlockStateNames::FACING_DIRECTION, 5))
