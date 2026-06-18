@@ -8,6 +8,7 @@ use pocketmine\network\mcpe\protocol\types\BlockPaletteEntry;
 use pocketmine\utils\SingletonTrait;
 use RuntimeException;
 
+/** Tracks custom entries appended to the Bedrock block palette. */
 final class BlockPaletteEntryMapper {
     use SingletonTrait;
 
@@ -18,6 +19,7 @@ final class BlockPaletteEntryMapper {
         return 10000 + count($this->entries);
     }
 
+    /** @return array<string, array{builder: BlockBuilder, entry: BlockPaletteEntry}> */
     public function getMappings(): array {
         return $this->mappings;
     }
@@ -35,6 +37,7 @@ final class BlockPaletteEntryMapper {
         $this->mappings = $mappings;
     }
 
+    /** @return list<BlockPaletteEntry> */
     public function getEntries(): array {
         return $this->entries;
     }
@@ -43,6 +46,11 @@ final class BlockPaletteEntryMapper {
         $this->entries = $entries;
     }
 
+    /**
+     * Adds a custom block entry to the outgoing block palette.
+     *
+     * @internal Prefer CustomBlockRegistry for normal block registration.
+     */
     public function map(BlockBuilder $builder, BlockPaletteEntry $entry): void {
         $runtimeId = $builder->getRuntimeId();
         $this->validateRuntimeId($runtimeId);

@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Defines the color and optional tint method used on maps. */
 final class MapColorComponent extends BlockComponent {
     public function __construct(
         private readonly string|array $color,

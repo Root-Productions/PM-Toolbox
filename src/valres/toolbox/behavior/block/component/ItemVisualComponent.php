@@ -7,6 +7,7 @@ namespace valres\toolbox\behavior\block\component;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\block\component\type\BlockVisual;
 
+/** Defines the geometry and materials used when the block is shown as an item. */
 final class ItemVisualComponent extends BlockComponent {
     public function __construct(private readonly BlockVisual $visual) {
     }

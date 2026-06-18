@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Schedules block tick events within the configured interval range. */
 final class TickComponent extends BlockComponent {
     public function __construct(
         private readonly int $minInterval,

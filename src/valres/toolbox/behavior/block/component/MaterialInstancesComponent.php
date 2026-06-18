@@ -10,6 +10,7 @@ use valres\toolbox\behavior\block\component\type\MaterialInstance;
 use valres\toolbox\behavior\block\component\type\MaterialInstanceTarget;
 use valres\toolbox\behavior\block\component\type\RenderMethod;
 
+/** Maps block faces or geometry bones to textures and render settings. */
 final class MaterialInstancesComponent extends BlockComponent {
     /** @param array<string, MaterialInstance|string|array<string, mixed>> $instances */
     public function __construct(private readonly array $instances) {

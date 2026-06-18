@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Enables the legacy custom block interaction and placement hooks. */
 class CustomComponentsComponent extends BlockComponent {
     public function __construct(
         private readonly bool $hasPlayerInteract = true,

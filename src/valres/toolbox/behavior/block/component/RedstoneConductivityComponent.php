@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Controls redstone conductivity and whether wire may step down this block. */
 final class RedstoneConductivityComponent extends BlockComponent {
     public function __construct(
         private readonly ?bool $redstoneConductor = null,

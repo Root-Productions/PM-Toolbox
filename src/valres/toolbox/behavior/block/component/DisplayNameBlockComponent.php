@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Defines the localization key or raw text used as the block name. */
 final class DisplayNameBlockComponent extends BlockComponent {
     public function __construct(private readonly string $name) {
     }

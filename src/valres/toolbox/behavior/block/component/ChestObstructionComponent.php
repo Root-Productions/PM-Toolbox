@@ -7,6 +7,7 @@ namespace valres\toolbox\behavior\block\component;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\block\component\type\ChestObstructionRule;
 
+/** Controls when this block obstructs the opening of a chest below it. */
 final class ChestObstructionComponent extends BlockComponent {
     public function __construct(private readonly ChestObstructionRule|string $obstructionRule = ChestObstructionRule::SHAPE) {
     }

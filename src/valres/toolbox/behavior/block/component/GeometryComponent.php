@@ -7,6 +7,7 @@ namespace valres\toolbox\behavior\block\component;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\Tag;
 
+/** Defines the block geometry, culling behavior and per-bone visibility. */
 final class GeometryComponent extends BlockComponent {
     /** @param array<string, bool|string> $boneVisibility */
     public function __construct(

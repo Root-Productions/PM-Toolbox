@@ -9,6 +9,7 @@ use valres\toolbox\attribute\AutoLoadPriority;
 use valres\toolbox\behavior\block\permutation\attribute\BlockPermutationResolver;
 use valres\toolbox\utils\ClassScanner;
 
+/** Discovers and applies block permutation resolvers in priority order. */
 abstract class PermutationsResolver {
     /** @var list<self>|null */
     private static ?array $resolvers = null;

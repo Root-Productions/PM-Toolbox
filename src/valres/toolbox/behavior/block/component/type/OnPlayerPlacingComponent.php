@@ -8,6 +8,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\block\component\BlockComponent;
 
+/** Enables the block event fired when a player places the block. */
 class OnPlayerPlacingComponent extends BlockComponent {
     public function __construct() {
     }

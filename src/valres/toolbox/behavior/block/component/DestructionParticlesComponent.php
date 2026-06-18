@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Defines the particles emitted when the block is destroyed. */
 final class DestructionParticlesComponent extends BlockComponent {
     public function __construct(
         private readonly ?string $texture = null,

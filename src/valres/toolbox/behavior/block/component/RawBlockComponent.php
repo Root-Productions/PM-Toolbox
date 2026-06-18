@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Wraps an arbitrary component identifier and prebuilt NBT payload. */
 final class RawBlockComponent extends BlockComponent {
     public function __construct(
         private readonly string $identifier,

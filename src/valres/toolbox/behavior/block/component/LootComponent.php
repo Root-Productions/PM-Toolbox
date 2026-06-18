@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Defines the loot table used when the block is destroyed. */
 final class LootComponent extends BlockComponent {
     public function __construct(private readonly string $lootTable) {
     }

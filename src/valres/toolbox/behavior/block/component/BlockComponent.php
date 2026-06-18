@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Base class for block data entries serialized as component NBT. */
 abstract class BlockComponent {
     abstract public static function identifier(): string;
 

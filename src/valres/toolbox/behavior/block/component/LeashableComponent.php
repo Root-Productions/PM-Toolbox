@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Allows entities to be leashed to the block at an optional offset. */
 final class LeashableComponent extends BlockComponent {
     public function __construct(private readonly ?array $offset = null) {
     }

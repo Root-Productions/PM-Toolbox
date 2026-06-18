@@ -14,10 +14,19 @@ use valres\toolbox\behavior\block\permutation\BlockPermutation;
 use valres\toolbox\behavior\block\property\BlockStateProperty;
 use valres\toolbox\behavior\block\traits\BlockTrait;
 
+/**
+ * Stores serializable block definitions for synchronization with async workers.
+ *
+ * @internal Used by CustomBlockRegistry and AsyncRegisterBlocksTask.
+ */
 final class AsyncBlockRegistrationStore {
     private static array $definitions = [];
 
-    /** @throws JsonException */
+    /**
+     * @internal Called after a block has been registered on the main thread.
+     *
+     * @throws JsonException
+     */
     public static function add(BlockBuilder $builder): void {
         $runtimeId = $builder->getRuntimeId();
         $blockFactory = $builder->getBlockFactory();
@@ -49,10 +58,12 @@ final class AsyncBlockRegistrationStore {
         ];
     }
 
+    /** @return array<string, array<string, mixed>> */
     public static function getAll(): array {
         return self::$definitions;
     }
 
+    /** @internal Decodes component and trait payloads inside async workers. */
     public static function decodeComponentNbt(string $encoded): \pocketmine\nbt\tag\Tag {
         return (new NetworkNbtSerializer())
             ->read(base64_decode($encoded, true) ?: "")

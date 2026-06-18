@@ -7,6 +7,7 @@ namespace valres\toolbox\behavior\block\component;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\block\component\type\BlockFace;
 
+/** Restricts the faces and neighboring blocks against which placement is valid. */
 final class PlacementFilterComponent extends BlockComponent {
     /** @param array<int, array<string, mixed>> $conditions */
     public function __construct(private readonly array $conditions) {

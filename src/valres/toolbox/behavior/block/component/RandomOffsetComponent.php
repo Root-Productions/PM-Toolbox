@@ -7,6 +7,7 @@ namespace valres\toolbox\behavior\block\component;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\block\component\type\RandomOffsetAxis;
 
+/** Applies a deterministic random visual offset along configured axes. */
 final class RandomOffsetComponent extends BlockComponent {
     public function __construct(
         private readonly ?RandomOffsetAxis $x = null,

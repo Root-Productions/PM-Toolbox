@@ -9,6 +9,7 @@ use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\block\component\ComponentNbtHelper;
 
+/** Controls whether the block can be mined and how long mining takes. */
 final class DestructibleByMiningComponent extends BlockComponent {
     public function __construct(private readonly bool|float|int $value = true) {
     }

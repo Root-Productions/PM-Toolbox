@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Defines the redstone power required by the block and its propagation behavior. */
 final class RedstoneConsumerComponent extends BlockComponent {
     public function __construct(
         private readonly int $minPower,

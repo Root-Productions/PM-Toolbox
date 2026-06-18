@@ -7,6 +7,7 @@ namespace valres\toolbox\behavior\block\component;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\block\component\ComponentNbtHelper;
 
+/** Makes the block expose a crafting table with the configured recipe tags. */
 final class CraftingTableComponent extends BlockComponent {
     /** @param string[] $craftingTags */
     public function __construct(

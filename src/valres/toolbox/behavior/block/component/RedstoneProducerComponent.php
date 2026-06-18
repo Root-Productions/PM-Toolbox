@@ -7,6 +7,7 @@ namespace valres\toolbox\behavior\block\component;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\block\component\type\BlockFace;
 
+/** Defines the redstone power emitted by the block and its connected faces. */
 final class RedstoneProducerComponent extends BlockComponent {
     /** @param BlockFace[]|string[] $connectedFaces */
     public function __construct(

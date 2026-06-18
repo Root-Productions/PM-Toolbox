@@ -7,6 +7,7 @@ namespace valres\toolbox\behavior\block\component;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\block\component\type\BlockBox;
 
+/** Defines the box targeted by player selection and block interaction. */
 final class SelectionBoxComponent extends BlockComponent {
     public function __construct(private readonly bool|BlockBox $value = true) {
     }

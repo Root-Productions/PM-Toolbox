@@ -9,6 +9,7 @@ use valres\toolbox\behavior\block\property\BlockStateProperty;
 use valres\toolbox\behavior\block\traits\type\BlockTraitId;
 use valres\toolbox\behavior\block\traits\type\PlacementPositionTraitState;
 
+/** Derives face and vertical-half states from the placement position. */
 final class PlacementPositionTrait extends BlockTrait {
     /** @param list<PlacementPositionTraitState|string> $enabledStates */
     public function __construct(private readonly array $enabledStates) {

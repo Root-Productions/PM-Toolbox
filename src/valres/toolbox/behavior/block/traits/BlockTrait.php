@@ -12,6 +12,7 @@ use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\block\component\ComponentNbtHelper;
 use valres\toolbox\behavior\block\property\BlockStateProperty;
 
+/** Base class for Bedrock block traits and their provided state properties. */
 abstract class BlockTrait {
     /** @return list<BackedEnum|string> */
     abstract protected function enabledStates(): array;

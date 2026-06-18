@@ -8,6 +8,7 @@ use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\block\component\type\BlockFace;
 use valres\toolbox\behavior\block\component\type\LiquidTouchReaction;
 
+/** Defines how the block contains, blocks and reacts to nearby liquids. */
 final class LiquidDetectionComponent extends BlockComponent {
     /** @param array<int, array<string, mixed>> $detectionRules */
     public function __construct(private readonly array $detectionRules) {

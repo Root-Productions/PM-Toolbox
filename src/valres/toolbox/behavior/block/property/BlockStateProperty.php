@@ -9,6 +9,7 @@ use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
 use valres\toolbox\behavior\block\component\ComponentNbtHelper;
 
+/** Defines a Bedrock block state name and its allowed values. */
 final class BlockStateProperty {
     const TAG_NAME = "name";
     const TAG_ENUM = "enum";
@@ -23,6 +24,7 @@ final class BlockStateProperty {
         return $this->name;
     }
 
+    /** @return list<mixed> */
     public function getValues(): array {
         return $this->values;
     }

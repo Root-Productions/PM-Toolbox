@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\component\type;
 
 use pocketmine\nbt\tag\CompoundTag;
 
+/** Combines geometry and material instances into a block visual payload. */
 final class BlockVisual {
     /**
      * @param string|array<string, mixed> $geometry
@@ -17,6 +18,7 @@ final class BlockVisual {
     ) {
     }
 
+    /** @return array<string, mixed> */
     public function toArray(): array {
         $materials = [];
         foreach ($this->materialInstances as $name => $instance) {

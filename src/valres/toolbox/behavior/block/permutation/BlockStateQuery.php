@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace valres\toolbox\behavior\block\permutation;
 
+/** Builds Molang conditions that compare Bedrock block state values. */
 final class BlockStateQuery {
     public static function equals(string $stateName, bool|int|float|string $value): string {
         return self::state($stateName) . " == " . self::value($value);

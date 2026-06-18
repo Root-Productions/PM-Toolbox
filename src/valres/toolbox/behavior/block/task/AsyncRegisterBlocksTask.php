@@ -17,6 +17,11 @@ use valres\toolbox\behavior\block\permutation\BlockPermutation;
 use valres\toolbox\behavior\block\property\BlockStateProperty;
 use valres\toolbox\behavior\block\traits\RawBlockTrait;
 
+/**
+ * Recreates custom block mappings inside a PocketMine async worker.
+ *
+ * @internal Scheduled by CustomBlockRegistry.
+ */
 final class AsyncRegisterBlocksTask extends AsyncTask {
     private string $autoloaderPath;
 

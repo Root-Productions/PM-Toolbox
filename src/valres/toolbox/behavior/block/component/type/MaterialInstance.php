@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\component\type;
 
 use BackedEnum;
 
+/** Describes the texture and rendering options for one block material target. */
 final class MaterialInstance {
     use BlockComponentValue;
 
@@ -21,6 +22,7 @@ final class MaterialInstance {
     ) {
     }
 
+    /** @return array<string, bool|float|string> */
     public function toArray(): array {
         return array_filter([
             "texture" => $this->texture,

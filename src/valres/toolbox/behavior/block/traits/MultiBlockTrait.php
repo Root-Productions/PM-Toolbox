@@ -10,6 +10,7 @@ use valres\toolbox\behavior\block\traits\type\BlockTraitId;
 use valres\toolbox\behavior\block\traits\type\MultiBlockDirection;
 use valres\toolbox\behavior\block\traits\type\MultiBlockTraitState;
 
+/** Describes a block composed of multiple vertically linked parts. */
 final class MultiBlockTrait extends BlockTrait {
     public function __construct(
         private readonly MultiBlockDirection|string $direction,

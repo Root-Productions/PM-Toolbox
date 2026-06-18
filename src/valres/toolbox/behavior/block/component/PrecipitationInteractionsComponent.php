@@ -7,6 +7,7 @@ namespace valres\toolbox\behavior\block\component;
 use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\block\component\type\PrecipitationBehavior;
 
+/** Controls how the block obstructs rain and accumulates snow. */
 final class PrecipitationInteractionsComponent extends BlockComponent {
     public function __construct(private readonly PrecipitationBehavior|string $behavior = PrecipitationBehavior::OBSTRUCT_RAIN_ACCUMULATE_SNOW) {
     }

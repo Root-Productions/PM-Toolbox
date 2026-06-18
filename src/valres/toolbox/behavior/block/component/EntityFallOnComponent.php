@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Sets the minimum fall distance required to trigger fall-on behavior. */
 final class EntityFallOnComponent extends BlockComponent {
     public function __construct(private readonly float|int $minFallDistance) {
     }

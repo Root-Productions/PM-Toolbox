@@ -8,6 +8,7 @@ use pocketmine\nbt\tag\Tag;
 use valres\toolbox\behavior\block\component\type\BlockBox;
 use valres\toolbox\behavior\block\component\ComponentNbtHelper;
 
+/** Defines the collision boxes used for entity and block interactions. */
 final class CollisionBoxComponent extends BlockComponent {
     /** @param bool|BlockBox|BlockBox[] $value */
     public function __construct(private readonly bool|BlockBox|array $value = true) {

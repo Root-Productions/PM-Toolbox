@@ -7,12 +7,13 @@ namespace valres\toolbox\behavior\block\permutation;
 use pocketmine\nbt\tag\CompoundTag;
 use valres\toolbox\behavior\block\component\BlockComponent;
 
+/** Applies component overrides when a Molang block-state condition matches. */
 final class BlockPermutation {
     const TAG_CONDITION = "condition";
     const TAG_COMPONENTS = "components";
 
 
-    /*** @var array<BlockComponent> */
+    /** @var array<string, BlockComponent> */
     private array $components = [];
 
     public function __construct(
@@ -29,6 +30,7 @@ final class BlockPermutation {
         return $this;
     }
 
+    /** @return array<string, BlockComponent> */
     public function getComponents(): array {
         return $this->components;
     }

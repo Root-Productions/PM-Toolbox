@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Applies translation, rotation and scale transforms to the block model. */
 final class TransformationComponent extends BlockComponent {
     public function __construct(
         private readonly ?array $translation = null,

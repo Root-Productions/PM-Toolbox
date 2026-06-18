@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\traits;
 
 use pocketmine\nbt\tag\CompoundTag;
 
+/** Wraps an arbitrary trait identifier and prebuilt NBT payload. */
 final class RawBlockTrait extends BlockTrait {
     public function __construct(
         private readonly string $identifier,

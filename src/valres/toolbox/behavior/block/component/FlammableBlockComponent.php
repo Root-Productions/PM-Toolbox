@@ -6,6 +6,7 @@ namespace valres\toolbox\behavior\block\component;
 
 use pocketmine\nbt\tag\Tag;
 
+/** Controls how easily the block catches fire and is destroyed by it. */
 final class FlammableBlockComponent extends BlockComponent {
     public function __construct(
         private readonly bool|int $catchChanceModifier = true,

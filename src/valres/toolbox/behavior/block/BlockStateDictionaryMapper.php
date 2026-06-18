@@ -18,6 +18,7 @@ use ReflectionException;
 use ReflectionProperty;
 use RuntimeException;
 
+/** Mutates PocketMine's runtime block state dictionary with custom entries. */
 final class BlockStateDictionaryMapper {
     use SingletonTrait;
 
@@ -39,6 +40,10 @@ final class BlockStateDictionaryMapper {
     private array $blocks = [];
 
     /**
+     * Caches reflection handles for PocketMine's block state dictionary internals.
+     *
+     * @internal This class mutates PocketMine network dictionary internals.
+     *
      * @throws ReflectionException
      */
     public function __construct() {
@@ -56,9 +61,7 @@ final class BlockStateDictionaryMapper {
         $this->vanillaStates = $dictionary->getStates();
     }
 
-    /**
-     * @return array
-     */
+    /** @return array<string, BlockStateDictionaryEntry> */
     public function getStates(): array {
         return $this->states;
     }
@@ -73,6 +76,10 @@ final class BlockStateDictionaryMapper {
     }
 
     /**
+     * Adds custom block states and rebuilds PocketMine's runtime lookup tables.
+     *
+     * @internal Prefer CustomBlockRegistry for normal block registration.
+     *
      * @param BlockStateDictionaryEntry[] $entries
      *
      * @throws ReflectionException
@@ -157,7 +164,13 @@ final class BlockStateDictionaryMapper {
         }
     }
 
-    /** @throws ReflectionException */
+    /**
+     * Rebuilds PocketMine's block state dictionary and translator caches.
+     *
+     * @internal Reflection bridge for TypeConverter block dictionary internals.
+     *
+     * @throws ReflectionException
+     */
     public function apply(): void {
         $translator = TypeConverter::getInstance()->getBlockTranslator();
         $dictionary = $translator->getBlockStateDictionary();

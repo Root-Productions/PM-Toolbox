@@ -9,6 +9,7 @@ use valres\toolbox\behavior\block\component\type\CardinalDirection;
 use valres\toolbox\behavior\block\component\type\ConnectionRuleMode;
 use valres\toolbox\behavior\block\component\ComponentNbtHelper;
 
+/** Defines which neighboring blocks and directions this block connects to. */
 final class ConnectionRuleComponent extends BlockComponent {
     /** @param CardinalDirection[]|string[] $enabledDirections */
     public function __construct(

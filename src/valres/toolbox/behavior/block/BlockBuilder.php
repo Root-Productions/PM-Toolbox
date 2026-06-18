@@ -27,6 +27,7 @@ use valres\toolbox\behavior\item\builder\LegacyItemBuilder;
 use valres\toolbox\behavior\block\component\ComponentNbtHelper;
 use valres\toolbox\behavior\item\ItemFormatEnum;
 
+/** Collects the runtime metadata, components, states and traits of a custom block. */
 final class BlockBuilder {
     private Block $block;
     private ?Closure $blockFactory = null;
@@ -132,6 +133,7 @@ final class BlockBuilder {
         return $this;
     }
 
+    /** @return list<string> */
     public function getTags(): array {
         return $this->tags;
     }
@@ -144,6 +146,7 @@ final class BlockBuilder {
         $this->tags[] = $tag;
     }
 
+    /** @return array<string, BlockComponent> */
     public function getComponents(): array {
         return $this->components;
     }
@@ -165,6 +168,7 @@ final class BlockBuilder {
         unset($this->components[$id]);
     }
 
+    /** @return list<BlockPermutation> */
     public function getPermutations(): array {
         return $this->permutations;
     }
@@ -174,6 +178,7 @@ final class BlockBuilder {
         return $this;
     }
 
+    /** @return list<BlockStateProperty> */
     public function getProperties(): array {
         return $this->properties;
     }
@@ -193,6 +198,7 @@ final class BlockBuilder {
         return $this;
     }
 
+    /** @return array<string, BlockTrait> */
     public function getTraits(): array {
         return $this->traits;
     }
@@ -281,9 +287,7 @@ final class BlockBuilder {
             ->setTag("molangVersion", new IntTag(13));
     }
 
-    /**
-     * @return BlockStateDictionaryEntry[]
-     */
+    /** @return list<BlockStateDictionaryEntry> */
     public function getBlockStateDictionaryEntries(): array {
         $properties = $this->getAllStateProperties();
         if (empty($properties)) {
@@ -327,6 +331,12 @@ final class BlockBuilder {
         return array_values($properties);
     }
 
+    /**
+     * @internal Generates every combination of block state values.
+     *
+     * @param list<list<mixed>> $arrays
+     * @return list<list<mixed>>
+     */
     public function getCartesianProduct(array $arrays): array {
         if (empty($arrays)) {
             return [[]];

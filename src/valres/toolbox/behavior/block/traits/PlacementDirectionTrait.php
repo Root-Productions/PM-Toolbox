@@ -10,6 +10,7 @@ use valres\toolbox\behavior\block\traits\type\BlockDescriptor;
 use valres\toolbox\behavior\block\traits\type\BlockTraitId;
 use valres\toolbox\behavior\block\traits\type\PlacementDirectionTraitState;
 
+/** Derives directional states from the player's orientation during placement. */
 final class PlacementDirectionTrait extends BlockTrait {
     /**
      * @param list<PlacementDirectionTraitState|string> $enabledStates

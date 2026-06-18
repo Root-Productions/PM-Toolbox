@@ -16,7 +16,6 @@ final class BehaviorInterceptor {
 
     public function __construct() {
         $this->experiments = new Experiments([
-            "data_driven_blocks" => true,
             "data_driven_items" => true
         ], true);
     }

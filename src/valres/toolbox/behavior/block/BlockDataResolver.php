@@ -23,7 +23,13 @@ use valres\toolbox\behavior\block\component\type\MaterialInstance;
 use valres\toolbox\behavior\block\component\type\OnPlayerPlacingComponent;
 use valres\toolbox\behavior\block\component\type\RenderMethod;
 
+/** Derives default Bedrock components from a PocketMine block instance. */
 class BlockDataResolver {
+    /**
+     * Applies auto-detected components before user-defined block components.
+     *
+     * @internal Called by CustomBlockRegistry during registration.
+     */
     public static function applyDefault(BlockBuilder $builder): void {
         $block = $builder->getBlock();
         $renderMethod = $block->isTransparent() ? RenderMethod::ALPHA_TEST_SINGLE_SIDED : RenderMethod::OPAQUE;
