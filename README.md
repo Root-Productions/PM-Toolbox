@@ -163,6 +163,51 @@ Or with the helper:
 ToolboxLoader::enable($this, RconSettings::default("secret", 19132));
 ```
 
+## Camera
+
+Register the camera helper once during enable. PMToolBox will send the vanilla camera presets when a player finishes initializing.
+
+```php
+use valres\toolbox\camera\Camera;
+
+protected function onEnable(): void {
+    if (!Camera::isRegistered()) {
+        Camera::register($this);
+    }
+}
+```
+
+Then build and send camera instructions fluently:
+
+```php
+use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\types\camera\CameraSetInstructionEaseType;
+use valres\toolbox\camera\Camera;
+use valres\toolbox\camera\CameraPresets;
+
+Camera::set(CameraPresets::free())
+    ->ease(1.0, CameraSetInstructionEaseType::OUT_CUBIC)
+    ->position(new Vector3(100, 80, 100))
+    ->facing($player->getPosition())
+    ->send($player);
+
+Camera::fade()
+    ->time(0.5, 1.0, 0.5)
+    ->rgb(0, 0, 0)
+    ->send($player);
+
+Camera::clear()->send($player);
+```
+
+Sequences are useful when a plugin wants to group multiple instructions:
+
+```php
+Camera::sequence()
+    ->add(Camera::shake(0.35, 0.75)->rotational())
+    ->add(Camera::fov(65)->ease(0.4))
+    ->send($player);
+```
+
 ## Packets
 
 PMToolBox includes a small packet API inspired by LibPacket/SimplePacketHandler: register handlers for specific packet classes instead of writing long `instanceof` chains.
