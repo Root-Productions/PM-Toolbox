@@ -208,6 +208,42 @@ Camera::sequence()
     ->send($player);
 ```
 
+## Data-Driven UI
+
+PMToolBox includes an experimental DDUI helper inspired by Minecraft Bedrock's Data-Driven UI model and `Joshet18/Data-DrivenUI`. It is registered automatically by `ToolboxLoader::enable()`.
+
+```php
+use valres\toolbox\form\ddui\DduiManager;
+use valres\toolbox\form\ddui\DduiObservable;
+
+$status = DduiObservable::string("Ready");
+$enabled = DduiObservable::bool(true, clientWritable: true);
+
+DduiManager::customForm("Settings")
+    ->label($status)
+    ->toggle("Enabled", $enabled)
+    ->button("Refresh", function() use ($status): void {
+        $status->set("Updated at " . date("H:i:s"));
+    }, closeOnClick: false)
+    ->send($player);
+```
+
+For simple dialogs:
+
+```php
+DduiManager::messageBox("Confirm", "Delete this item?")
+    ->button1("Delete")
+    ->button2("Cancel")
+    ->onSelect(function($player, int $selection): void {
+        if ($selection === 1) {
+            // Delete item.
+        }
+    })
+    ->send($player);
+```
+
+Supported `DduiCustomForm` controls are labels, spacers, dividers, text fields, toggles, dropdowns, sliders and buttons. `DduiObservable` values can be updated server-side while the screen is open; client-writable observables are updated when the player changes the matching control.
+
 ## Packets
 
 PMToolBox includes a small packet API inspired by LibPacket/SimplePacketHandler: register handlers for specific packet classes instead of writing long `instanceof` chains.
