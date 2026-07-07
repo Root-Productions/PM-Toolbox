@@ -96,6 +96,10 @@ class ToolboxLoader {
             DiscordLogHandler::register($loader);
         }
 
+        if (!DduiManager::isRegistered()) {
+            DduiManager::register($loader);
+        }
+
         self::registerCommand(new WorldsCommand());
 
         Packets::createInterceptor($loader, EventPriority::HIGHEST)
